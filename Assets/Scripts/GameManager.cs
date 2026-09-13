@@ -48,6 +48,7 @@ public class GameManager : MonoBehaviour
     private Button pauseButton;
     private GameObject pearlChip;
     private GameObject tutorialObjectivePanel;
+    private GameObject touchDirectionPad;
     private TMP_Text resultText;
     private readonly Image[] gameplayPowerIcons = new Image[4];
     private float remainingTime = 60f;
@@ -134,16 +135,23 @@ public class GameManager : MonoBehaviour
         OceanUI.SetRect(pearlPanel.rectTransform, new Vector2(0.025f, 0.885f), new Vector2(0.36f, 0.98f), Vector2.zero, Vector2.zero);
         pearlText = OceanUI.CreateText("PEARL  0", pearlPanel.transform, 46f, OceanUI.Sand, TextAlignmentOptions.Left);
         pearlText.name = "Pearl Text";
+        OceanUI.SetRect(pearlText.rectTransform, new Vector2(.26f, 0f), Vector2.one, Vector2.zero, Vector2.zero);
+        UI3DModelPreview pearlPreview = pearlPanel.gameObject.AddComponent<UI3DModelPreview>();
+        pearlPreview.modelPrefab = FindAnyObjectByType<MapManager>()?.pearlPrefab;
+        pearlPreview.previewAnchorMin = new Vector2(0f, .08f);
+        pearlPreview.previewAnchorMax = new Vector2(.25f, .92f);
+        pearlPreview.rotationSpeed = 48f;
+        pearlPreview.EnsureOutputForEditor();
         pearlChip.SetActive(false);
 
         Image scoreChip = OceanUI.CreatePanel("Score", root, Color.clear);
         scoreChip.raycastTarget = false;
         OceanUI.SetRect(scoreChip.rectTransform, new Vector2(0.67f, 0.885f), new Vector2(0.975f, 0.98f), Vector2.zero, Vector2.zero);
-        scoreText = OceanUI.CreateText("0", scoreChip.transform, 84f, OceanUI.Foam, TextAlignmentOptions.Right);
+        scoreText = OceanUI.CreateText("0", scoreChip.transform, 100f, OceanUI.Foam, TextAlignmentOptions.Right);
         scoreText.name = "Score Text";
         bestScoreText = OceanUI.CreateText("BEST  0", root, 42f, OceanUI.Sand, TextAlignmentOptions.Right);
         bestScoreText.name = "Best Score";
-        OceanUI.SetRect(bestScoreText.rectTransform, new Vector2(0.67f, 0.855f), new Vector2(0.975f, 0.90f), Vector2.zero, Vector2.zero);
+        OceanUI.SetRect(bestScoreText.rectTransform, new Vector2(0.67f, 0.825f), new Vector2(0.975f, 0.87f), Vector2.zero, Vector2.zero);
         timerText = OceanUI.CreateText("", root, 28f, OceanUI.Coral, TextAlignmentOptions.Right);
         timerText.name = "Timer Text";
         timerText.fontSize = 52f;
@@ -241,8 +249,8 @@ public class GameManager : MonoBehaviour
         GameplayGestureInput gestures = ComponentAt<GameplayGestureInput>(root, "Swipe Surface");
         if (gestures != null) gestures.player = playerController;
         foreach (TouchMoveButton move in root.GetComponentsInChildren<TouchMoveButton>(true)) move.player = playerController;
-        Transform dpad = FindDeepChild(root, "Touch Direction Pad");
-        if (dpad != null) dpad.gameObject.SetActive(GameSession.ShowTouchControls);
+        touchDirectionPad = FindDeepChild(root, "Touch Direction Pad")?.gameObject;
+        RefreshTouchControls();
 
         WireButton(pauseButton, TogglePause);
         WireButton(ComponentAt<Button>(pauseOverlay != null ? pauseOverlay.transform : null, "Primary"), TogglePause);
@@ -352,7 +360,7 @@ public class GameManager : MonoBehaviour
         GameObject overlay = OceanUI.CreateObject(titleValue, root);
         OceanUI.Stretch(overlay.GetComponent<RectTransform>(), 0f);
         Image dim = overlay.AddComponent<Image>();
-        dim.color = new Color(0.01f, 0.08f, 0.13f, 0.72f);
+        dim.color = titleValue == "CURRENT PAUSED" ? Color.clear : new Color(0.01f, 0.08f, 0.13f, 0.72f);
         Image panel = OceanUI.CreatePanel("Panel", overlay.transform, OceanUI.Panel);
         OceanUI.SetRect(panel.rectTransform, new Vector2(0.10f, 0.28f), new Vector2(0.90f, 0.73f), Vector2.zero, Vector2.zero);
         TMP_Text title = OceanUI.CreateText(titleValue, panel.transform, 52f, OceanUI.Sand);
@@ -416,6 +424,7 @@ public class GameManager : MonoBehaviour
     public void StartGame()
     {
         if (gameStarted || gameOver) return;
+        RefreshTouchControls();
         if (!runPrepared)
         {
             runPrepared = true;
@@ -436,6 +445,12 @@ public class GameManager : MonoBehaviour
         if (GameSession.InvincibilityReady) invincibleUntil = Time.time + 10f;
         if (GameSession.Mode == FishGameMode.Tutorial) BeginScriptedTutorial();
         else ShowStatus("GO!", 1.4f);
+    }
+
+    public void RefreshTouchControls()
+    {
+        if (touchDirectionPad != null)
+            touchDirectionPad.SetActive(GameSession.ShowTouchControls);
     }
 
     public void AddScore(int amount)
@@ -769,7 +784,7 @@ public class GameManager : MonoBehaviour
             int savedBest = PlayerPrefs.GetInt($"Fishfish.HighScore.{GameSession.Mode}", 0);
             bestScoreText.text = $"BEST  {Mathf.Max(savedBest, score)}";
         }
-        if (pearlText != null) pearlText.text = $"PEARL  {GameSession.PearlWallet + GameSession.RunPearls}";
+        if (pearlText != null) pearlText.text = (GameSession.PearlWallet + GameSession.RunPearls).ToString();
         timerText.text = GameSession.Mode == FishGameMode.TimeAttack ? $"TIME  {Mathf.CeilToInt(remainingTime)}" : "";
         // The top-right icon row replaces the old equipment word list.
         if (powerText != null) powerText.text = "";

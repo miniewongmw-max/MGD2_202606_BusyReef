@@ -70,9 +70,10 @@ public static class GameSession
 
     public static bool BuyPowerUp(int index, int price)
     {
-        if (PearlWallet < price) return false;
+        // Store one of each power for the next dive, not a stack of duplicates.
+        if (index < 0 || index > 3 || PowerUpCount(index) > 0 || PearlWallet < price) return false;
         PlayerPrefs.SetInt(PearlKey, PearlWallet - price);
-        PlayerPrefs.SetInt($"Fishfish.PowerUp.{index}", PowerUpCount(index) + 1);
+        PlayerPrefs.SetInt($"Fishfish.PowerUp.{index}", 1);
         PlayerPrefs.Save();
         return true;
     }

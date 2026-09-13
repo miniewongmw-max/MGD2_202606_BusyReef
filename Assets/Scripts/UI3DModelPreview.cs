@@ -33,6 +33,7 @@ public class UI3DModelPreview : MonoBehaviour
     private int previewLaneId;
     private float lastRenderTime;
     private bool needsRender;
+    private float renderedAspect;
     private readonly Vector3[] screenCorners = new Vector3[4];
 
     private void OnEnable() => rebuildRequested = true;
@@ -46,12 +47,15 @@ public class UI3DModelPreview : MonoBehaviour
     private void Update()
     {
         if (lastPrefab != modelPrefab) rebuildRequested = true;
+        if (previewImage != null && renderTexture != null &&
+            Mathf.Abs(GetOutputAspect() - renderedAspect) > .08f) rebuildRequested = true;
         if (rebuildRequested) RebuildPreview();
         if (modelInstance == null || previewCamera == null || !IsVisibleOnScreen()) return;
         float now = Time.realtimeSinceStartup;
-        if (!needsRender && (!slowlyRotate || now - lastRenderTime < .1f)) return;
+        if (!needsRender && (!slowlyRotate || now - lastRenderTime < .05f)) return;
         if (slowlyRotate && lastRenderTime > 0f)
-            modelInstance.Rotate(Vector3.up, rotationSpeed * Mathf.Min(now - lastRenderTime, .25f), Space.Self);
+            modelInstance.RotateAround(previewRoot.transform.TransformPoint(modelOffset), Vector3.up,
+                rotationSpeed * Mathf.Min(now - lastRenderTime, .25f));
         previewCamera.Render();
         lastRenderTime = now;
         needsRender = false;
@@ -111,9 +115,23 @@ public class UI3DModelPreview : MonoBehaviour
         if (previewImage == null) return;
         previewImage.enabled = modelPrefab != null;
         if (modelPrefab == null) return;
+        Canvas.ForceUpdateCanvases();
+        Rect outputRect = previewImage.rectTransform.rect;
+        if (outputRect.width < 2f || outputRect.height < 2f)
+        {
+            // Hidden sliding pages can report zero size during their first
+            // layout pass. Wait instead of baking a stretched preview texture.
+            rebuildRequested = true;
+            return;
+        }
 
-        int textureSize = Application.isPlaying ? 256 : 384;
-        renderTexture = new RenderTexture(textureSize, textureSize, 16, RenderTextureFormat.ARGB32)
+        int shortSide = Application.isPlaying ? 128 : 192;
+        renderedAspect = GetOutputAspect();
+        int textureWidth = renderedAspect >= 1f ? Mathf.RoundToInt(shortSide * renderedAspect) : shortSide;
+        int textureHeight = renderedAspect < 1f ? Mathf.RoundToInt(shortSide / renderedAspect) : shortSide;
+        if (textureWidth > 1024) { textureWidth = 1024; textureHeight = Mathf.RoundToInt(textureWidth / renderedAspect); }
+        if (textureHeight > 1024) { textureHeight = 1024; textureWidth = Mathf.RoundToInt(textureHeight * renderedAspect); }
+        renderTexture = new RenderTexture(Mathf.Max(16, textureWidth), Mathf.Max(16, textureHeight), 16, RenderTextureFormat.ARGB32)
         {
             name = name + " 3D UI Preview",
             hideFlags = HideFlags.HideAndDontSave,
@@ -133,7 +151,9 @@ public class UI3DModelPreview : MonoBehaviour
         clone.hideFlags = HideFlags.HideAndDontSave;
         modelInstance = clone.transform;
         modelInstance.localPosition = Vector3.zero;
-        modelInstance.localRotation = Quaternion.Euler(modelRotation);
+        // Keep the prefab's authored orientation (notably the Seal's imported
+        // axis correction), then apply only the Inspector's preview turn.
+        modelInstance.localRotation = Quaternion.Euler(modelRotation) * modelInstance.localRotation;
         DisablePrefabBehaviours(clone);
         SetLayerRecursively(clone, 31);
 
@@ -144,6 +164,7 @@ public class UI3DModelPreview : MonoBehaviour
         previewCamera.enabled = false;
         previewCamera.orthographic = true;
         previewCamera.orthographicSize = cameraSize;
+        previewCamera.aspect = renderTexture.width / (float)renderTexture.height;
         previewCamera.clearFlags = CameraClearFlags.SolidColor;
         previewCamera.backgroundColor = new Color(0f, 0f, 0f, 0f);
         previewCamera.cullingMask = 1 << 31;
@@ -159,6 +180,7 @@ public class UI3DModelPreview : MonoBehaviour
         light.intensity = 1.35f;
         light.cullingMask = 1 << 31;
         previewRoot.SetActive(true);
+        PrepareParticlePreview();
         FitModelToCamera();
         lastRenderTime = 0f;
         needsRender = true;
@@ -167,17 +189,69 @@ public class UI3DModelPreview : MonoBehaviour
     private void FitModelToCamera()
     {
         Renderer[] renderers = modelInstance.GetComponentsInChildren<Renderer>(true);
-        if (renderers.Length == 0) return;
-        Bounds bounds = renderers[0].bounds;
-        for (int i = 1; i < renderers.Length; i++) bounds.Encapsulate(renderers[i].bounds);
-        float largest = Mathf.Max(.001f, bounds.size.x, bounds.size.y, bounds.size.z);
-        modelInstance.localScale *= (2f * cameraSize * .72f / largest) * modelScale;
+        bool particleOnly = true;
+        bool found = false;
+        Bounds bounds = default;
+        foreach (Renderer renderer in renderers)
+        {
+            if (!renderer.enabled || !renderer.gameObject.activeInHierarchy) continue;
+            if (!(renderer is ParticleSystemRenderer)) particleOnly = false;
+            if (!found) { bounds = renderer.bounds; found = true; }
+            else bounds.Encapsulate(renderer.bounds);
+        }
+        if (!found) return;
 
-        bounds = modelInstance.GetComponentsInChildren<Renderer>(true)[0].bounds;
-        renderers = modelInstance.GetComponentsInChildren<Renderer>(true);
-        for (int i = 1; i < renderers.Length; i++) bounds.Encapsulate(renderers[i].bounds);
+        // Particle-system bounds include future travel and can dwarf the visible
+        // bubble. Frame the emitted particle around its actual emitter instead.
+        if (particleOnly) bounds = new Bounds(modelInstance.position, Vector3.one * .85f);
+        Vector3 size = previewRoot.transform.InverseTransformVector(bounds.size);
+        // Allow a full turn without the model clipping when its depth becomes
+        // its on-screen width.
+        float visibleWidth = Mathf.Max(.001f, Mathf.Abs(size.x), Mathf.Abs(size.z));
+        float visibleHeight = Mathf.Max(.001f, Mathf.Abs(size.y));
+        // Keep the prefab's native scale and proportions. Move the preview
+        // camera instead of enlarging or shrinking the model to fit each slot.
+        float heightFit = visibleHeight / (2f * .72f);
+        float widthFit = visibleWidth / (2f * .72f * previewCamera.aspect);
+        previewCamera.orthographicSize = Mathf.Max(.05f,
+            Mathf.Max(heightFit, widthFit) * (cameraSize / 1.25f) / Mathf.Max(.25f, modelScale));
+        previewCamera.transform.localPosition = new Vector3(0f, 0f,
+            -Mathf.Max(6f, Mathf.Abs(size.z) * 2f + 2f));
+
+        // Centre the visible geometry, including prefabs with off-centre roots.
+        if (particleOnly) bounds = new Bounds(modelInstance.position, Vector3.one);
         Vector3 localCenter = previewRoot.transform.InverseTransformPoint(bounds.center);
         modelInstance.localPosition += modelOffset - localCenter;
+    }
+
+    private void PrepareParticlePreview()
+    {
+        Renderer[] renderers = modelInstance.GetComponentsInChildren<Renderer>(true);
+        foreach (Renderer renderer in renderers)
+            if (renderer.enabled && !(renderer is ParticleSystemRenderer)) return;
+
+        foreach (ParticleSystem system in modelInstance.GetComponentsInChildren<ParticleSystem>(true))
+        {
+            ParticleSystemRenderer particleRenderer = system.GetComponent<ParticleSystemRenderer>();
+            if (particleRenderer == null || !particleRenderer.enabled) continue;
+            system.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+            var emission = system.emission;
+            emission.enabled = false;
+            ParticleSystem.EmitParams bubble = new ParticleSystem.EmitParams
+            {
+                position = Vector3.zero,
+                startSize = .8f,
+                startLifetime = 1000f
+            };
+            system.Emit(bubble, 1);
+        }
+    }
+
+    private float GetOutputAspect()
+    {
+        if (previewImage == null) return 1f;
+        Rect rect = previewImage.rectTransform.rect;
+        return rect.width / Mathf.Max(1f, rect.height);
     }
 
     private static void DisablePrefabBehaviours(GameObject root)

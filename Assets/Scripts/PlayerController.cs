@@ -235,15 +235,22 @@ public class PlayerController : MonoBehaviour
             oldSeal.gameObject.SetActive(false);
             Destroy(oldSeal.gameObject);
         }
-        foreach (Renderer renderer in GetComponentsInChildren<Renderer>(true)) renderer.enabled = true;
-
         int selectedCharacter = GameSession.EquippedCharacter;
         GameObject selectedPrefab = selectedCharacter == 1 ? sealCharacterPrefab : turtleCharacterPrefab;
+        Transform sceneTurtle = transform.Find("Turtle");
+        Transform sceneSeal = transform.Find("Seal");
+        // The authored models are children of Player, not the optional prefab
+        // slots. Keep their active state in sync whenever selection changes.
+        if (sceneTurtle != null) sceneTurtle.gameObject.SetActive(selectedPrefab == null && selectedCharacter == 0);
+        if (sceneSeal != null) sceneSeal.gameObject.SetActive(selectedPrefab == null && selectedCharacter == 1);
+        Transform selectedSceneModel = selectedCharacter == 1 ? sceneSeal : sceneTurtle;
+        if (selectedPrefab == null && selectedSceneModel != null)
+            foreach (Renderer renderer in selectedSceneModel.GetComponentsInChildren<Renderer>(true)) renderer.enabled = true;
         if (selectedPrefab != null)
         {
-            foreach (Renderer renderer in GetComponentsInChildren<Renderer>(true)) renderer.enabled = false;
             GameObject model = Instantiate(selectedPrefab, transform);
             model.name = "Runtime Character";
+            model.SetActive(true);
             model.transform.localPosition = Vector3.zero;
             model.transform.localRotation = Quaternion.identity;
             foreach (Collider modelCollider in model.GetComponentsInChildren<Collider>(true)) modelCollider.enabled = false;
@@ -253,7 +260,8 @@ public class PlayerController : MonoBehaviour
         }
         if (selectedCharacter == 1)
         {
-            Debug.LogWarning("Seal character prefab is not assigned. Using the existing player visual as a fallback.", this);
+            if (sceneSeal == null)
+                Debug.LogWarning("Seal character prefab and scene model are missing. Using the existing player visual as a fallback.", this);
         }
         Color[] palettes =
         {
@@ -263,10 +271,16 @@ public class PlayerController : MonoBehaviour
             new Color32(116, 92, 174, 255)
         };
         Color color = palettes[Mathf.Clamp(GameSession.EquippedSkin, 0, palettes.Length - 1)];
-        foreach (Renderer renderer in GetComponentsInChildren<Renderer>())
+        // Only tint a primitive fallback. Recolouring imported scene models
+        // would replace their authored materials when switching characters.
+        if (sceneTurtle == null && sceneSeal == null)
         {
-            if (renderer.material.HasProperty("_BaseColor")) renderer.material.SetColor("_BaseColor", color);
-            else if (renderer.material.HasProperty("_Color")) renderer.material.color = color;
+            foreach (Renderer renderer in GetComponents<Renderer>())
+            {
+                renderer.enabled = true;
+                if (renderer.material.HasProperty("_BaseColor")) renderer.material.SetColor("_BaseColor", color);
+                else if (renderer.material.HasProperty("_Color")) renderer.material.color = color;
+            }
         }
         EnableCharacterShadows();
     }

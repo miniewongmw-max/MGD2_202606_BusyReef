@@ -7,7 +7,12 @@ public enum GameSfx
     Pearl,
     Obstacle,
     PowerUp,
-    GameOver
+    GameOver,
+    Crab,
+    Pufferfish,
+    Jellyfish,
+    Squid,
+    Shark
 }
 
 /// <summary>Assign clips on the Game Audio object in the Gameplay scene.</summary>
@@ -29,6 +34,13 @@ public class GameAudioManager : MonoBehaviour
     public AudioClip obstacleHit;
     public AudioClip powerUpCollected;
     public AudioClip gameOver;
+
+    [Header("Animal Encounters")]
+    public AudioClip crab;
+    public AudioClip pufferfish;
+    public AudioClip jellyfish;
+    public AudioClip squid;
+    public AudioClip shark;
 
     [Header("Audio Sources")]
     public AudioSource musicSource;
@@ -65,6 +77,11 @@ public class GameAudioManager : MonoBehaviour
         if (other.obstacleHit != null) obstacleHit = other.obstacleHit;
         if (other.powerUpCollected != null) powerUpCollected = other.powerUpCollected;
         if (other.gameOver != null) gameOver = other.gameOver;
+        if (other.crab != null) crab = other.crab;
+        if (other.pufferfish != null) pufferfish = other.pufferfish;
+        if (other.jellyfish != null) jellyfish = other.jellyfish;
+        if (other.squid != null) squid = other.squid;
+        if (other.shark != null) shark = other.shark;
     }
 
     public static GameAudioManager EnsureInstance()
@@ -107,9 +124,17 @@ public class GameAudioManager : MonoBehaviour
             GameSfx.Obstacle => manager.obstacleHit,
             GameSfx.PowerUp => manager.powerUpCollected,
             GameSfx.GameOver => manager.gameOver,
+            GameSfx.Crab => manager.crab,
+            // Use the original obstacle encounter sound rather than the
+            // replacement pufferfish clip from GameAudio_2.
+            GameSfx.Pufferfish => manager.obstacleHit,
+            GameSfx.Jellyfish => manager.jellyfish,
+            GameSfx.Squid => manager.squid,
+            GameSfx.Shark => manager.shark,
             _ => null
         };
-        if (clip != null && !Muted) manager.sfxSource.PlayOneShot(clip);
+        if (clip != null && !Muted)
+            manager.sfxSource.PlayOneShot(clip, sound == GameSfx.Jellyfish ? .35f : 1f);
     }
 
     private void EnsureSources()
@@ -146,11 +171,16 @@ public class GameAudioManager : MonoBehaviour
         // Also works when an already-open scene has not refreshed its serialized
         // clip references, or an audio manager was created before Gameplay loaded.
         if (backgroundMusic == null) backgroundMusic = Resources.Load<AudioClip>("GameAudio/BGM");
-        if (buttonClick == null) buttonClick = Resources.Load<AudioClip>("GameAudio/ButtonClick");
-        if (playerMove == null) playerMove = Resources.Load<AudioClip>("GameAudio/PlayerMove");
+        if (buttonClick == null) buttonClick = Resources.Load<AudioClip>("GameAudio/ButtonClick2");
+        if (playerMove == null) playerMove = Resources.Load<AudioClip>("GameAudio/PlayerMove2");
         if (pearlCollected == null) pearlCollected = Resources.Load<AudioClip>("GameAudio/PearlCollected");
         if (obstacleHit == null) obstacleHit = Resources.Load<AudioClip>("GameAudio/ObstacleHit");
         if (powerUpCollected == null) powerUpCollected = Resources.Load<AudioClip>("GameAudio/PowerUpCollected");
         if (gameOver == null) gameOver = Resources.Load<AudioClip>("GameAudio/GameOver");
+        if (crab == null) crab = Resources.Load<AudioClip>("GameAudio/Crab");
+        if (pufferfish == null) pufferfish = Resources.Load<AudioClip>("GameAudio/Pufferfish");
+        if (jellyfish == null) jellyfish = Resources.Load<AudioClip>("GameAudio/JellyfishDischarge");
+        if (squid == null) squid = Resources.Load<AudioClip>("GameAudio/Squid");
+        if (shark == null) shark = Resources.Load<AudioClip>("GameAudio/Shark");
     }
 }

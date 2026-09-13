@@ -25,6 +25,7 @@ public class MainMenuBehaviour : MonoBehaviour
     private RectTransform navigationBar;
     private RectTransform navigationBleed;
     private Image fullPageBackdrop;
+    private RawImage splitPageBackdrop;
     private bool lastLandscape;
     private int slideFromPage = 2;
     private bool built;
@@ -76,6 +77,10 @@ public class MainMenuBehaviour : MonoBehaviour
         fullPageBackdrop.raycastTarget = false;
         OceanUI.Stretch(backdropObject.GetComponent<RectTransform>(), 0f);
         backdropObject.transform.SetAsFirstSibling();
+        splitPageBackdrop = OceanUI.CreateObject("Split Page Backdrop", backdropObject.transform).AddComponent<RawImage>();
+        splitPageBackdrop.raycastTarget = false;
+        OceanUI.Stretch(splitPageBackdrop.rectTransform, 0f);
+        splitPageBackdrop.gameObject.SetActive(false);
 
         pageArea = OceanUI.CreateObject("Sliding Pages", root).GetComponent<RectTransform>();
         OceanUI.SetRect(pageArea, new Vector2(0f, 0.145f), new Vector2(1f, 0.91f), Vector2.zero, Vector2.zero);
@@ -115,6 +120,7 @@ public class MainMenuBehaviour : MonoBehaviour
         navigationBar = ComponentAt<RectTransform>(root, "Five Button Navigation");
         navigationBleed = ComponentAt<RectTransform>(hubCanvas.transform, "Navigation Edge Fill");
         fullPageBackdrop = ComponentAt<Image>(hubCanvas.transform, "Full Screen Page Backdrop");
+        splitPageBackdrop = ComponentAt<RawImage>(hubCanvas.transform, "Split Page Backdrop");
         carousel = ComponentAt<StageCarousel3D>(root, "3D Circular Mode Carousel");
         stagePrevious = ComponentAt<Button>(root, "Previous");
         stageNext = ComponentAt<Button>(root, "Next");
@@ -356,6 +362,7 @@ public class MainMenuBehaviour : MonoBehaviour
     {
         RectTransform page = Page("Mode Selection Page");
         AddOpaquePageBackground(page, new Color32(3, 45, 66, 255));
+        AddSplitPageArtwork(page, true);
         AddTitle(page, "MODE SELECTION", "Swipe the circular carousel and tap a mode");
         GameObject holder = OceanUI.CreateObject("3D Circular Mode Carousel", page);
         OceanUI.SetRect(holder.GetComponent<RectTransform>(), new Vector2(.06f, .30f), new Vector2(.94f, .77f), Vector2.zero, Vector2.zero);
@@ -399,6 +406,7 @@ public class MainMenuBehaviour : MonoBehaviour
     {
         RectTransform page = Page("Shop Page");
         AddOpaquePageBackground(page, new Color32(3, 45, 66, 255));
+        AddSplitPageArtwork(page, false);
         AddTitle(page, "PEARL SHOP", "Power-ups and characters have separate categories");
         Button powers = OceanUI.CreateButton("Power Category", "POWER-UPS", page, OceanUI.Aqua, () => ShopCategory(true));
         Button chars = OceanUI.CreateButton("Character Category", "CHARACTERS", page, OceanUI.Sand, () => ShopCategory(false));
@@ -718,6 +726,16 @@ public class MainMenuBehaviour : MonoBehaviour
         background.transform.SetAsFirstSibling();
     }
 
+    private void AddSplitPageArtwork(RectTransform page, bool upperHalf)
+    {
+        RawImage artwork = OceanUI.CreateObject("Split Page Artwork", page).AddComponent<RawImage>();
+        artwork.texture = Resources.Load<Sprite>("UI/ModeShopBackground")?.texture;
+        artwork.uvRect = upperHalf ? new Rect(0f, .5f, 1f, .5f) : new Rect(0f, 0f, 1f, .5f);
+        artwork.raycastTarget = false;
+        OceanUI.Stretch(artwork.rectTransform, 0f);
+        artwork.transform.SetSiblingIndex(1);
+    }
+
     private void ShopCategory(bool powers)
     {
         if (powerShop != null) powerShop.SetActive(powers);
@@ -727,7 +745,12 @@ public class MainMenuBehaviour : MonoBehaviour
 
     private void BuyPower(int i)
     {
-        feedback.text = GameSession.BuyPowerUp(i, PowerCosts[i]) ? PowerNames[i].ToUpperInvariant() + " ADDED" : "NOT ENOUGH PEARLS";
+        if (GameSession.PowerUpCount(i) > 0)
+            feedback.text = "ALREADY READY FOR NEXT DIVE";
+        else
+            feedback.text = GameSession.BuyPowerUp(i, PowerCosts[i])
+                ? PowerNames[i].ToUpperInvariant() + " EQUIPPED FOR NEXT DIVE"
+                : "NOT ENOUGH PEARLS";
         RefreshAll();
     }
 
@@ -749,7 +772,12 @@ public class MainMenuBehaviour : MonoBehaviour
         RefreshAll();
     }
 
-    private void ToggleTouch() { GameSession.ShowTouchControls = !GameSession.ShowTouchControls; RefreshAll(); }
+    private void ToggleTouch()
+    {
+        GameSession.ShowTouchControls = !GameSession.ShowTouchControls;
+        GameManager.Instance?.RefreshTouchControls();
+        RefreshAll();
+    }
 
     private void SetAboutVisible(bool visible)
     {
@@ -772,7 +800,27 @@ public class MainMenuBehaviour : MonoBehaviour
         {
             bool opaquePage = currentPage == 0 || currentPage == 1 || currentPage == 3 || currentPage == 4;
             fullPageBackdrop.gameObject.SetActive(opaquePage);
-            fullPageBackdrop.color = currentPage == 0 ? new Color32(155, 220, 240, 255) :
+            Image pageArtwork = opaquePage && currentPage < pages.Count
+                ? FindDeepChild(pages[currentPage], "Opaque Page Background")?.GetComponent<Image>()
+                : null;
+            RawImage splitArtwork = opaquePage && currentPage < pages.Count
+                ? FindDeepChild(pages[currentPage], "Split Page Artwork")?.GetComponent<RawImage>()
+                : null;
+            bool hasSplitArtwork = splitArtwork != null && splitArtwork.texture != null;
+            if (splitPageBackdrop != null)
+            {
+                splitPageBackdrop.gameObject.SetActive(hasSplitArtwork);
+                if (hasSplitArtwork)
+                {
+                    splitPageBackdrop.texture = splitArtwork.texture;
+                    splitPageBackdrop.uvRect = splitArtwork.uvRect;
+                }
+            }
+            bool hasArtwork = pageArtwork != null && pageArtwork.sprite != null && pageArtwork.color.a > .5f;
+            fullPageBackdrop.sprite = !hasSplitArtwork && hasArtwork ? pageArtwork.sprite : null;
+            fullPageBackdrop.type = Image.Type.Simple;
+            fullPageBackdrop.color = hasSplitArtwork ? Color.clear : hasArtwork ? Color.white :
+                currentPage == 0 ? new Color32(155, 220, 240, 255) :
                 currentPage == 1 ? new Color32(174, 226, 242, 255) :
                 currentPage == 3 ? new Color32(255, 169, 199, 255) : new Color32(171, 226, 242, 255);
         }
@@ -807,6 +855,15 @@ public class MainMenuBehaviour : MonoBehaviour
     private void RefreshShopAndCharacterButtons()
     {
         Transform root = hubCanvas != null ? OceanUI.SafeRoot(hubCanvas) : null;
+        for (int i = 0; i < PowerNames.Length; i++)
+        {
+            Transform card = FindDeepChild(powerShop != null ? powerShop.transform : null, PowerNames[i]);
+            Button buyPower = ComponentAt<Button>(card, "Buy");
+            if (buyPower == null) continue;
+            bool ready = GameSession.PowerUpCount(i) > 0;
+            SetButtonText(buyPower, ready ? "SOLD - READY" : $"{PowerCosts[i]} PEARLS");
+            buyPower.interactable = !ready;
+        }
         Button sealBuy = ComponentAt<Button>(root, "Buy Seal");
         bool ownsSeal = GameSession.OwnsSkin(1);
         if (sealBuy != null)
@@ -833,6 +890,9 @@ public class MainMenuBehaviour : MonoBehaviour
 
     private void CreateReadyEquipmentIcons(Transform page)
     {
+        Image backing = OceanUI.CreatePanel("Ready Equipment Backing", page, new Color(.08f, .34f, .49f, .82f));
+        backing.raycastTarget = false;
+        OceanUI.SetRect(backing.rectTransform, new Vector2(.17f, .31f), new Vector2(.83f, .41f), Vector2.zero, Vector2.zero);
         for (int i = 0; i < readyEquipmentIcons.Length; i++)
             readyEquipmentIcons[i] = CreateReadyEquipmentIcon(page, i);
     }

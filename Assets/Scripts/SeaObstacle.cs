@@ -74,7 +74,15 @@ public class SeaObstacle : MonoBehaviour
                 motion?.ReactTo(player.transform);
                 break;
         }
-        GameAudioManager.Play(GameSfx.Obstacle);
+        GameAudioManager.Play(type switch
+        {
+            SeaObstacleType.Crab => GameSfx.Crab,
+            SeaObstacleType.Pufferfish => GameSfx.Pufferfish,
+            SeaObstacleType.Jellyfish => GameSfx.Jellyfish,
+            SeaObstacleType.Squid => GameSfx.Squid,
+            SeaObstacleType.Shark => GameSfx.Shark,
+            _ => GameSfx.Obstacle
+        });
         GameManager.Instance.NotifyObstacleEncountered(type);
 
         // Pufferfish is a permanent moving wall: it is never consumed and no

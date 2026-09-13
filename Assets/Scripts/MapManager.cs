@@ -872,11 +872,6 @@ public class MapManager : MonoBehaviour
         // Final named art keeps its authored materials. The old generic fallback
         // block is tinted so the game remains readable until all slots are filled.
         behaviour.Initialize(type, GetNamedObstaclePrefab(type) == null);
-        bool hasSolidCollider = false;
-        foreach (Collider collider in obstacle.GetComponentsInChildren<Collider>(true))
-            if (!collider.isTrigger) hasSolidCollider = true;
-        if (!hasSolidCollider)
-            obstacle.AddComponent<BoxCollider>();
         return obstacle;
     }
 
