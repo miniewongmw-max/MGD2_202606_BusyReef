@@ -3884,15 +3884,15 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 0.03, g: 0.01, b: 0.08, a: 0.88}
+  m_Color: {r: 0.23973443, g: 0.22798856, b: 0.2679245, a: 1}
   m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 10907, guid: 0000000000000000f000000000000000, type: 0}
-  m_Type: 1
+  m_Sprite: {fileID: 21300000, guid: 84b92baa796fd3b4fb2fdde8d21a1a3f, type: 3}
+  m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
   m_FillMethod: 4
@@ -16686,9 +16686,9 @@ MonoBehaviour:
   recycleDistance: 10
   safeRowsAheadOfStart: 6
   pearlRowsAheadOfStart: 2
-  pearlPrefab: {fileID: 0}
-  starfishPrefab: {fileID: 0}
-  treasureChestPrefab: {fileID: 0}
+  pearlPrefab: {fileID: 271490397321868210, guid: fea3b59f892b38044b65de38a7fbecb7, type: 3}
+  starfishPrefab: {fileID: 8070336453565154667, guid: 3fa6f399fc24f384d92082b3b84c8563, type: 3}
+  treasureChestPrefab: {fileID: 1700858986737110137, guid: 686bb8f57dd23094f91bbf11c128b577, type: 3}
   bubbleShieldPrefab: {fileID: 1429779898018092566, guid: 3e248fd7ca521c949906bcc6b1a129d2, type: 3}
   speedDashPrefab: {fileID: 2863116822905400906, guid: 697c6faf3f9a1d449b1739cecbcb4d34, type: 3}
   pearlMagnetPrefab: {fileID: 3469043284787299642, guid: bbc5319395d93ff4ebcae9a02a17bb75, type: 3}
@@ -16702,8 +16702,8 @@ MonoBehaviour:
   sideDecorationPrefabs:
   - {fileID: 1671162218962871013, guid: 0483a0acd8a025f44977939530501644, type: 3}
   - {fileID: 4483415983432011924, guid: 1025f5381d5aa4749823f7d16061c8c3, type: 3}
-  - {fileID: 0}
-  - {fileID: 0}
+  - {fileID: 2992832771702162391, guid: fd9b72d44958e7645995a347d33cf747, type: 3}
+  - {fileID: 424576427074433425, guid: f9c5513e05cd8a841a5bf28fbe976a42, type: 3}
   sideDecorationChance: 0.48
   sideDecorationScaleRange: {x: 0.82, y: 1.18}
   sideDecorationSurfaceHeight: 0.1
