@@ -29,8 +29,10 @@ public static class BusyReef3DPreviewInstaller
         int undoGroup = Undo.GetCurrentGroup();
         Undo.SetCurrentGroupName("Add Busy Reef 3D UI preview slots");
         foreach (string name in IconSlots) AddSlots(name, Vector2.zero, Vector2.one);
-        foreach (string name in CharacterSlots) AddSlots(name, new Vector2(.18f, .43f), new Vector2(.82f, .94f));
-        foreach (string name in ShopSlots) AddSlots(name, new Vector2(.24f, .60f), new Vector2(.76f, .94f));
+        foreach (string name in CharacterSlots)
+            AddSlots(name, name == "Seal" ? new Vector2(.18f, .63f) : new Vector2(.18f, .52f),
+                name == "Seal" ? new Vector2(.82f, .97f) : new Vector2(.82f, .94f));
+        foreach (string name in ShopSlots) AddSlots(name, new Vector2(.18f, .58f), new Vector2(.82f, .96f));
         PositionRequestedHudItems();
         ApplyRequestedPlayerMotion();
         Undo.CollapseUndoOperations(undoGroup);

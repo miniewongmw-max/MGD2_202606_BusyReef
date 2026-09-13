@@ -416,9 +416,9 @@ public class MainMenuBehaviour : MonoBehaviour
         Image seal = OceanUI.CreatePanel("Seal", characterShop.transform, new Color(.08f, .42f, .51f, .96f));
         OceanUI.SetRect(seal.rectTransform, new Vector2(.16f, .18f), new Vector2(.84f, .86f), Vector2.zero, Vector2.zero);
         TMP_Text sealName = OceanUI.CreateText("SEAL", seal.transform, 54f, OceanUI.Sand);
-        OceanUI.SetRect(sealName.rectTransform, new Vector2(.05f, .61f), new Vector2(.95f, .92f), Vector2.zero, Vector2.zero);
+        OceanUI.SetRect(sealName.rectTransform, new Vector2(.05f, .52f), new Vector2(.95f, .63f), Vector2.zero, Vector2.zero);
         TMP_Text sealInfo = OceanUI.CreateText("A playful new ocean explorer", seal.transform, 28f, OceanUI.Foam);
-        OceanUI.SetRect(sealInfo.rectTransform, new Vector2(.08f, .37f), new Vector2(.92f, .64f), Vector2.zero, Vector2.zero);
+        OceanUI.SetRect(sealInfo.rectTransform, new Vector2(.08f, .35f), new Vector2(.92f, .52f), Vector2.zero, Vector2.zero);
         Button buy = OceanUI.CreateButton("Buy Seal", $"BUY  {SealCost} PEARLS", seal.transform, OceanUI.Sand, BuySeal);
         OceanUI.SetRect(buy.GetComponent<RectTransform>(), new Vector2(.17f, .08f), new Vector2(.83f, .32f), Vector2.zero, Vector2.zero);
         feedback = OceanUI.CreateText("", page, 24f, OceanUI.Foam);
@@ -435,8 +435,8 @@ public class MainMenuBehaviour : MonoBehaviour
         OceanUI.SetRect(card.rectTransform, new Vector2(x, y), new Vector2(x + .49f, y + .45f), Vector2.zero, Vector2.zero);
         TMP_Text title = OceanUI.CreateText(PowerNames[i].ToUpperInvariant(), card.transform, 27f, OceanUI.Sand);
         TMP_Text info = OceanUI.CreateText(PowerInfo[i], card.transform, 21f, OceanUI.Foam);
-        OceanUI.SetRect(title.rectTransform, new Vector2(.04f, .62f), new Vector2(.96f, .94f), Vector2.zero, Vector2.zero);
-        OceanUI.SetRect(info.rectTransform, new Vector2(.06f, .30f), new Vector2(.94f, .65f), Vector2.zero, Vector2.zero);
+        OceanUI.SetRect(title.rectTransform, new Vector2(.04f, .42f), new Vector2(.96f, .58f), Vector2.zero, Vector2.zero);
+        OceanUI.SetRect(info.rectTransform, new Vector2(.06f, .29f), new Vector2(.94f, .42f), Vector2.zero, Vector2.zero);
         int item = i;
         Button buy = OceanUI.CreateButton("Buy", $"{PowerCosts[i]} PEARLS", card.transform, OceanUI.Aqua, () => BuyPower(item));
         OceanUI.SetRect(buy.GetComponent<RectTransform>(), new Vector2(.12f, .05f), new Vector2(.88f, .28f), Vector2.zero, Vector2.zero);
@@ -460,7 +460,7 @@ public class MainMenuBehaviour : MonoBehaviour
     {
         Image card = OceanUI.CreatePanel(name, parent, new Color(.04f, .31f, .41f, .96f));
         OceanUI.SetRect(card.rectTransform, new Vector2(x, .35f), new Vector2(x + .41f, .73f), Vector2.zero, Vector2.zero);
-        TMP_Text icon = OceanUI.CreateText(index == 0 ? "T" : "S", card.transform, 78f, color);
+        TMP_Text icon = OceanUI.CreateText("", card.transform, 78f, color);
         TMP_Text title = OceanUI.CreateText(name, card.transform, 32f, OceanUI.Foam);
         OceanUI.SetRect(icon.rectTransform, new Vector2(.1f, .43f), new Vector2(.9f, .94f), Vector2.zero, Vector2.zero);
         OceanUI.SetRect(title.rectTransform, new Vector2(.05f, .28f), new Vector2(.95f, .50f), Vector2.zero, Vector2.zero);
@@ -868,6 +868,9 @@ public class MainMenuBehaviour : MonoBehaviour
     {
         GameManager manager = GameManager.Instance;
         string[] labels = { GameSession.EquippedCharacterName.ToUpperInvariant(), "SHIELD", "DASH", "MAGNET", "INVINCIBLE" };
+        Transform characterPage = FindDeepChild(hubCanvas != null ? hubCanvas.transform : null, "Character Selection Page");
+        GameObject turtleModel = ComponentAt<UI3DModelPreview>(characterPage, "TURTLE")?.modelPrefab;
+        GameObject sealModel = ComponentAt<UI3DModelPreview>(characterPage, "SEAL")?.modelPrefab;
         for (int i = 0; i < readyEquipmentIcons.Length; i++)
         {
             Image icon = readyEquipmentIcons[i];
@@ -875,14 +878,16 @@ public class MainMenuBehaviour : MonoBehaviour
             bool available = i == 0 || GameSession.PowerUpCount(i - 1) > 0;
             icon.gameObject.SetActive(available);
             if (!available) continue;
+            UI3DModelPreview modelPreview = icon.GetComponent<UI3DModelPreview>();
+            if (i == 0 && modelPreview != null)
+                modelPreview.modelPrefab = GameSession.EquippedCharacter == 1 ? sealModel : turtleModel;
+            bool has3DModel = modelPreview != null && modelPreview.modelPrefab != null;
             Sprite sprite = i == 0 ? manager?.GetCharacterEquipmentIcon() : manager?.GetPowerEquipmentIcon(i - 1);
-            icon.sprite = sprite;
-            icon.color = sprite != null ? Color.white : GameManager.EquipmentPlaceholderColor(i);
+            icon.sprite = has3DModel ? null : sprite;
+            icon.color = has3DModel ? Color.clear : sprite != null ? Color.white : GameManager.EquipmentPlaceholderColor(i);
             TMP_Text label = ComponentAt<TMP_Text>(icon.transform, "Equipment Label");
             if (label != null)
             {
-                UI3DModelPreview modelPreview = icon.GetComponent<UI3DModelPreview>();
-                bool has3DModel = modelPreview != null && modelPreview.modelPrefab != null;
                 label.gameObject.SetActive(sprite == null && !has3DModel);
                 label.text = i == 0 ? labels[i] : labels[i] + " x" + GameSession.PowerUpCount(i - 1);
             }

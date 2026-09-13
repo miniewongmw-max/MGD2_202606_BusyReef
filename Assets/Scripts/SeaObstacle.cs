@@ -60,8 +60,15 @@ public class SeaObstacle : MonoBehaviour
                 motion?.Shake(0.8f, 1.8f);
                 break;
             case SeaObstacleType.Squid:
+                if (GameSession.Mode != FishGameMode.Tutorial)
+                    motion?.SpinOnce(0.78f, 1f);
+                break;
             case SeaObstacleType.Pufferfish:
                 motion?.SpinOnce(0.78f, 1f);
+                break;
+            case SeaObstacleType.Jellyfish:
+                if (GameSession.Mode != FishGameMode.Tutorial)
+                    motion?.ReactTo(player.transform);
                 break;
             default:
                 motion?.ReactTo(player.transform);
@@ -192,7 +199,10 @@ public class SeaObstacle : MonoBehaviour
         // leaves a clear gap to both neighbouring lanes even while the model sways.
         float worldFootprint = type == SeaObstacleType.Shark ? .55f : .46f;
 
-        tileCollider.isTrigger = false;
+        // Squid and jellyfish are pass-through hazards. A solid collider can
+        // shove the player's dynamic Rigidbody off its snapped grid position
+        // when these models rotate. Their effect is applied by Interact instead.
+        tileCollider.isTrigger = type == SeaObstacleType.Squid || type == SeaObstacleType.Jellyfish;
         tileCollider.center = new Vector3(0f, .42f * inverseY, 0f);
         tileCollider.size = new Vector3(
             worldFootprint * inverseX,

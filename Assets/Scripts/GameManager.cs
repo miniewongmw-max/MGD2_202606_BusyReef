@@ -778,8 +778,9 @@ public class GameManager : MonoBehaviour
         {
             Image icon = gameplayPowerIcons[i];
             if (icon == null) continue;
-            icon.sprite = GetPowerEquipmentIcon(i);
-            icon.color = icon.sprite != null ? Color.white : EquipmentPlaceholderColor(i);
+            bool has3DModel = icon.TryGetComponent(out UI3DModelPreview preview) && preview.modelPrefab != null;
+            icon.sprite = has3DModel ? null : GetPowerEquipmentIcon(i);
+            icon.color = has3DModel ? Color.clear : icon.sprite != null ? Color.white : EquipmentPlaceholderColor(i);
             icon.gameObject.SetActive(gameStarted && activePowers[i]);
         }
     }

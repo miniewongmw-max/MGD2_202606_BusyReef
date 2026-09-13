@@ -804,8 +804,8 @@ RectTransform:
   m_Children: []
   m_Father: {fileID: 163772607}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.24, y: 0.6}
-  m_AnchorMax: {x: 0.76, y: 0.94}
+  m_AnchorMin: {x: 0.18, y: 0.58}
+  m_AnchorMax: {x: 0.82, y: 0.96}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
@@ -1008,8 +1008,8 @@ RectTransform:
   m_Children: []
   m_Father: {fileID: 1233027532}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.04, y: 0.62}
-  m_AnchorMax: {x: 0.96, y: 0.94}
+  m_AnchorMin: {x: 0.04, y: 0.42}
+  m_AnchorMax: {x: 0.96, y: 0.58}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
@@ -1743,7 +1743,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 0.54509807, g: 0.90588236, b: 0.9647059, a: 1}
+  m_Color: {r: 1, g: 1, b: 1, a: 0}
   m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -1780,14 +1780,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a7e31b09ee794fa19199cdf77264b265, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::UI3DModelPreview
-  modelPrefab: {fileID: 0}
+  modelPrefab: {fileID: 2863116822905400906, guid: 697c6faf3f9a1d449b1739cecbcb4d34, type: 3}
   modelRotation: {x: 18, y: -28, z: 0}
   modelScale: 1
   modelOffset: {x: 0, y: 0, z: 0}
   previewImage: {fileID: 814374791}
   previewAnchorMin: {x: 0, y: 0}
   previewAnchorMax: {x: 1, y: 1}
-  slowlyRotate: 1
+  slowlyRotate: 0
   rotationSpeed: 18
   cameraSize: 1.25
 --- !u!1 &136677887
@@ -1980,7 +1980,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 0.8862745, b: 0.49411765, a: 1}
+  m_Color: {r: 1, g: 1, b: 1, a: 0}
   m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -2017,14 +2017,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a7e31b09ee794fa19199cdf77264b265, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::UI3DModelPreview
-  modelPrefab: {fileID: 0}
+  modelPrefab: {fileID: 7103257806398042252, guid: 9bcba178b23307142bdd8a32e5f25b77, type: 3}
   modelRotation: {x: 18, y: -28, z: 0}
   modelScale: 1
   modelOffset: {x: 0, y: 0, z: 0}
   previewImage: {fileID: 724394242}
   previewAnchorMin: {x: 0, y: 0}
   previewAnchorMax: {x: 1, y: 1}
-  slowlyRotate: 1
+  slowlyRotate: 0
   rotationSpeed: 18
   cameraSize: 1.25
 --- !u!1 &150637847
@@ -2377,13 +2377,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a7e31b09ee794fa19199cdf77264b265, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::UI3DModelPreview
-  modelPrefab: {fileID: 0}
+  modelPrefab: {fileID: 3469043284787299642, guid: bbc5319395d93ff4ebcae9a02a17bb75, type: 3}
   modelRotation: {x: 18, y: -28, z: 0}
   modelScale: 1
   modelOffset: {x: 0, y: 0, z: 0}
   previewImage: {fileID: 70376655}
-  previewAnchorMin: {x: 0.24, y: 0.6}
-  previewAnchorMax: {x: 0.76, y: 0.94}
+  previewAnchorMin: {x: 0.18, y: 0.58}
+  previewAnchorMax: {x: 0.82, y: 0.96}
   slowlyRotate: 1
   rotationSpeed: 18
   cameraSize: 1.25
@@ -3200,8 +3200,8 @@ RectTransform:
   m_Children: []
   m_Father: {fileID: 2145151997}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.18, y: 0.43}
-  m_AnchorMax: {x: 0.82, y: 0.94}
+  m_AnchorMin: {x: 0.18, y: 0.63}
+  m_AnchorMax: {x: 0.82, y: 0.97}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
@@ -4138,12 +4138,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a7e31b09ee794fa19199cdf77264b265, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::UI3DModelPreview
-  modelPrefab: {fileID: 0}
+  modelPrefab: {fileID: 6744795726825851181, guid: 496632d7624ce6b4496101d23105803f, type: 3}
   modelRotation: {x: 18, y: -28, z: 0}
   modelScale: 1
   modelOffset: {x: 0, y: 0, z: 0}
   previewImage: {fileID: 1049738958}
-  previewAnchorMin: {x: 0.18, y: 0.43}
+  previewAnchorMin: {x: 0.18, y: 0.52}
   previewAnchorMax: {x: 0.82, y: 0.94}
   slowlyRotate: 1
   rotationSpeed: 18
@@ -4291,13 +4291,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a7e31b09ee794fa19199cdf77264b265, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::UI3DModelPreview
-  modelPrefab: {fileID: 0}
+  modelPrefab: {fileID: 7103257806398042252, guid: 9bcba178b23307142bdd8a32e5f25b77, type: 3}
   modelRotation: {x: 18, y: -28, z: 0}
   modelScale: 1
   modelOffset: {x: 0, y: 0, z: 0}
   previewImage: {fileID: 1881102490}
-  previewAnchorMin: {x: 0.24, y: 0.6}
-  previewAnchorMax: {x: 0.76, y: 0.94}
+  previewAnchorMin: {x: 0.18, y: 0.58}
+  previewAnchorMax: {x: 0.82, y: 0.96}
   slowlyRotate: 1
   rotationSpeed: 18
   cameraSize: 1.25
@@ -4354,7 +4354,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 0.56078434, b: 0.7176471, a: 1}
+  m_Color: {r: 1, g: 1, b: 1, a: 0}
   m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -4391,14 +4391,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a7e31b09ee794fa19199cdf77264b265, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::UI3DModelPreview
-  modelPrefab: {fileID: 0}
+  modelPrefab: {fileID: 3469043284787299642, guid: bbc5319395d93ff4ebcae9a02a17bb75, type: 3}
   modelRotation: {x: 18, y: -28, z: 0}
   modelScale: 1
   modelOffset: {x: 0, y: 0, z: 0}
   previewImage: {fileID: 1826072280}
   previewAnchorMin: {x: 0, y: 0}
   previewAnchorMax: {x: 1, y: 1}
-  slowlyRotate: 1
+  slowlyRotate: 0
   rotationSpeed: 18
   cameraSize: 1.25
 --- !u!1 &413179110
@@ -4671,7 +4671,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: T
+  m_text: ''
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: ba3ab56f15e5ced479c61bd1d97ce8be, type: 2}
   m_sharedMaterial: {fileID: 3035097212100031486, guid: ba3ab56f15e5ced479c61bd1d97ce8be, type: 2}
@@ -4920,8 +4920,8 @@ RectTransform:
   m_Children: []
   m_Father: {fileID: 951619976}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.24, y: 0.6}
-  m_AnchorMax: {x: 0.76, y: 0.94}
+  m_AnchorMin: {x: 0.18, y: 0.58}
+  m_AnchorMax: {x: 0.82, y: 0.96}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
@@ -4992,7 +4992,7 @@ RectTransform:
   m_Children: []
   m_Father: {fileID: 1826158489}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.18, y: 0.43}
+  m_AnchorMin: {x: 0.18, y: 0.52}
   m_AnchorMax: {x: 0.82, y: 0.94}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
@@ -5084,7 +5084,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 0.8862745, b: 0.49411765, a: 1}
+  m_Color: {r: 1, g: 1, b: 1, a: 0}
   m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -5121,14 +5121,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a7e31b09ee794fa19199cdf77264b265, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::UI3DModelPreview
-  modelPrefab: {fileID: 0}
+  modelPrefab: {fileID: 2863116822905400906, guid: 697c6faf3f9a1d449b1739cecbcb4d34, type: 3}
   modelRotation: {x: 18, y: -28, z: 0}
   modelScale: 1
   modelOffset: {x: 0, y: 0, z: 0}
   previewImage: {fileID: 1286633736}
   previewAnchorMin: {x: 0, y: 0}
   previewAnchorMax: {x: 1, y: 1}
-  slowlyRotate: 1
+  slowlyRotate: 0
   rotationSpeed: 18
   cameraSize: 1.25
 --- !u!1 &535665268
@@ -5827,8 +5827,8 @@ RectTransform:
   m_Children: []
   m_Father: {fileID: 2145151997}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.05, y: 0.61}
-  m_AnchorMax: {x: 0.95, y: 0.92}
+  m_AnchorMin: {x: 0.05, y: 0.52}
+  m_AnchorMax: {x: 0.95, y: 0.63}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
@@ -6455,8 +6455,8 @@ RectTransform:
   m_Children: []
   m_Father: {fileID: 384340587}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.04, y: 0.62}
-  m_AnchorMax: {x: 0.96, y: 0.94}
+  m_AnchorMin: {x: 0.04, y: 0.42}
+  m_AnchorMax: {x: 0.96, y: 0.58}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
@@ -6713,8 +6713,8 @@ RectTransform:
   m_Children: []
   m_Father: {fileID: 2145151997}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.08, y: 0.37}
-  m_AnchorMax: {x: 0.92, y: 0.64}
+  m_AnchorMin: {x: 0.08, y: 0.35}
+  m_AnchorMax: {x: 0.92, y: 0.52}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
@@ -7617,8 +7617,8 @@ RectTransform:
   m_Children: []
   m_Father: {fileID: 163772607}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.04, y: 0.62}
-  m_AnchorMax: {x: 0.96, y: 0.94}
+  m_AnchorMin: {x: 0.04, y: 0.42}
+  m_AnchorMax: {x: 0.96, y: 0.58}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
@@ -9947,13 +9947,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a7e31b09ee794fa19199cdf77264b265, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::UI3DModelPreview
-  modelPrefab: {fileID: 0}
+  modelPrefab: {fileID: 2863116822905400906, guid: 697c6faf3f9a1d449b1739cecbcb4d34, type: 3}
   modelRotation: {x: 18, y: -28, z: 0}
   modelScale: 1
   modelOffset: {x: 0, y: 0, z: 0}
   previewImage: {fileID: 447780629}
-  previewAnchorMin: {x: 0.24, y: 0.6}
-  previewAnchorMax: {x: 0.76, y: 0.94}
+  previewAnchorMin: {x: 0.18, y: 0.58}
+  previewAnchorMax: {x: 0.82, y: 0.96}
   slowlyRotate: 1
   rotationSpeed: 18
   cameraSize: 1.25
@@ -10014,7 +10014,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: S
+  m_text: ''
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: ba3ab56f15e5ced479c61bd1d97ce8be, type: 2}
   m_sharedMaterial: {fileID: 3035097212100031486, guid: ba3ab56f15e5ced479c61bd1d97ce8be, type: 2}
@@ -11211,7 +11211,7 @@ RectTransform:
   m_Children: []
   m_Father: {fileID: 375898586}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.18, y: 0.43}
+  m_AnchorMin: {x: 0.18, y: 0.52}
   m_AnchorMax: {x: 0.82, y: 0.94}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
@@ -12545,7 +12545,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 0.8862745, b: 0.49411765, a: 1}
+  m_Color: {r: 1, g: 1, b: 1, a: 0}
   m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -12582,14 +12582,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a7e31b09ee794fa19199cdf77264b265, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::UI3DModelPreview
-  modelPrefab: {fileID: 0}
+  modelPrefab: {fileID: 1429779898018092566, guid: 3e248fd7ca521c949906bcc6b1a129d2, type: 3}
   modelRotation: {x: 18, y: -28, z: 0}
   modelScale: 1
   modelOffset: {x: 0, y: 0, z: 0}
   previewImage: {fileID: 56549512}
   previewAnchorMin: {x: 0, y: 0}
   previewAnchorMax: {x: 1, y: 1}
-  slowlyRotate: 1
+  slowlyRotate: 0
   rotationSpeed: 18
   cameraSize: 1.25
 --- !u!1 &1210418063
@@ -12644,7 +12644,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 0.54509807, g: 0.90588236, b: 0.9647059, a: 1}
+  m_Color: {r: 1, g: 1, b: 1, a: 0}
   m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -12681,14 +12681,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a7e31b09ee794fa19199cdf77264b265, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::UI3DModelPreview
-  modelPrefab: {fileID: 0}
+  modelPrefab: {fileID: 3469043284787299642, guid: bbc5319395d93ff4ebcae9a02a17bb75, type: 3}
   modelRotation: {x: 18, y: -28, z: 0}
   modelScale: 1
   modelOffset: {x: 0, y: 0, z: 0}
   previewImage: {fileID: 1378251872}
   previewAnchorMin: {x: 0, y: 0}
   previewAnchorMax: {x: 1, y: 1}
-  slowlyRotate: 1
+  slowlyRotate: 0
   rotationSpeed: 18
   cameraSize: 1.25
 --- !u!1 &1217985253
@@ -13116,13 +13116,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a7e31b09ee794fa19199cdf77264b265, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::UI3DModelPreview
-  modelPrefab: {fileID: 0}
+  modelPrefab: {fileID: 1429779898018092566, guid: 3e248fd7ca521c949906bcc6b1a129d2, type: 3}
   modelRotation: {x: 18, y: -28, z: 0}
   modelScale: 1
   modelOffset: {x: 0, y: 0, z: 0}
   previewImage: {fileID: 1378501999}
-  previewAnchorMin: {x: 0.24, y: 0.6}
-  previewAnchorMax: {x: 0.76, y: 0.94}
+  previewAnchorMin: {x: 0.18, y: 0.58}
+  previewAnchorMax: {x: 0.82, y: 0.96}
   slowlyRotate: 1
   rotationSpeed: 18
   cameraSize: 1.25
@@ -14261,7 +14261,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 0.56078434, b: 0.7176471, a: 1}
+  m_Color: {r: 1, g: 1, b: 1, a: 0}
   m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -14298,14 +14298,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a7e31b09ee794fa19199cdf77264b265, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::UI3DModelPreview
-  modelPrefab: {fileID: 0}
+  modelPrefab: {fileID: 6744795726825851181, guid: 496632d7624ce6b4496101d23105803f, type: 3}
   modelRotation: {x: 18, y: -28, z: 0}
   modelScale: 1
   modelOffset: {x: 0, y: 0, z: 0}
   previewImage: {fileID: 1127986318}
   previewAnchorMin: {x: 0, y: 0}
   previewAnchorMax: {x: 1, y: 1}
-  slowlyRotate: 1
+  slowlyRotate: 0
   rotationSpeed: 18
   cameraSize: 1.25
 --- !u!1 &1315892707
@@ -14629,8 +14629,8 @@ RectTransform:
   m_Children: []
   m_Father: {fileID: 1233027532}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.24, y: 0.6}
-  m_AnchorMax: {x: 0.76, y: 0.94}
+  m_AnchorMin: {x: 0.18, y: 0.58}
+  m_AnchorMax: {x: 0.82, y: 0.96}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
@@ -16329,7 +16329,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 0.56078434, b: 0.7176471, a: 1}
+  m_Color: {r: 1, g: 1, b: 1, a: 0}
   m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -16366,14 +16366,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a7e31b09ee794fa19199cdf77264b265, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::UI3DModelPreview
-  modelPrefab: {fileID: 0}
+  modelPrefab: {fileID: 7103257806398042252, guid: 9bcba178b23307142bdd8a32e5f25b77, type: 3}
   modelRotation: {x: 18, y: -28, z: 0}
   modelScale: 1
   modelOffset: {x: 0, y: 0, z: 0}
   previewImage: {fileID: 1484459050}
   previewAnchorMin: {x: 0, y: 0}
   previewAnchorMax: {x: 1, y: 1}
-  slowlyRotate: 1
+  slowlyRotate: 0
   rotationSpeed: 18
   cameraSize: 1.25
 --- !u!1 &1530599135
@@ -16706,7 +16706,12 @@ MonoBehaviour:
   - {fileID: 0}
   sideDecorationChance: 0.48
   sideDecorationScaleRange: {x: 0.82, y: 1.18}
-  sideDecorationSurfaceHeight: -0.22
+  sideDecorationSurfaceHeight: 0.1
+  sideDecorationHeightOffsets:
+  - 0.05
+  - 0.02
+  - 0
+  - 0
   sideDecorationBehindOffset: 0.24
   useAlternatingRowTint: 1
   deeperRowBrightness: 0.9
@@ -17711,8 +17716,8 @@ RectTransform:
   m_Children: []
   m_Father: {fileID: 384340587}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.06, y: 0.3}
-  m_AnchorMax: {x: 0.94, y: 0.65}
+  m_AnchorMin: {x: 0.06, y: 0.29}
+  m_AnchorMax: {x: 0.94, y: 0.42}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
@@ -20650,8 +20655,8 @@ RectTransform:
   m_Children: []
   m_Father: {fileID: 951619976}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.04, y: 0.62}
-  m_AnchorMax: {x: 0.96, y: 0.94}
+  m_AnchorMin: {x: 0.04, y: 0.42}
+  m_AnchorMax: {x: 0.96, y: 0.58}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
@@ -21453,12 +21458,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a7e31b09ee794fa19199cdf77264b265, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::UI3DModelPreview
-  modelPrefab: {fileID: 0}
+  modelPrefab: {fileID: 904396547118330029, guid: 2cc0f531528875d4e966bb0afa5f5966, type: 3}
   modelRotation: {x: 18, y: -28, z: 0}
   modelScale: 1
   modelOffset: {x: 0, y: 0, z: 0}
   previewImage: {fileID: 480777534}
-  previewAnchorMin: {x: 0.18, y: 0.43}
+  previewAnchorMin: {x: 0.18, y: 0.52}
   previewAnchorMax: {x: 0.82, y: 0.94}
   slowlyRotate: 1
   rotationSpeed: 18
@@ -22030,7 +22035,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 0.56078434, b: 0.7176471, a: 1}
+  m_Color: {r: 1, g: 1, b: 1, a: 0}
   m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -22067,14 +22072,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a7e31b09ee794fa19199cdf77264b265, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::UI3DModelPreview
-  modelPrefab: {fileID: 0}
+  modelPrefab: {fileID: 1429779898018092566, guid: 3e248fd7ca521c949906bcc6b1a129d2, type: 3}
   modelRotation: {x: 18, y: -28, z: 0}
   modelScale: 1
   modelOffset: {x: 0, y: 0, z: 0}
   previewImage: {fileID: 1286687954}
   previewAnchorMin: {x: 0, y: 0}
   previewAnchorMax: {x: 1, y: 1}
-  slowlyRotate: 1
+  slowlyRotate: 0
   rotationSpeed: 18
   cameraSize: 1.25
 --- !u!1 &1881102488
@@ -22109,8 +22114,8 @@ RectTransform:
   m_Children: []
   m_Father: {fileID: 384340587}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.24, y: 0.6}
-  m_AnchorMax: {x: 0.76, y: 0.94}
+  m_AnchorMin: {x: 0.18, y: 0.58}
+  m_AnchorMax: {x: 0.82, y: 0.96}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
@@ -23145,8 +23150,8 @@ RectTransform:
   m_Children: []
   m_Father: {fileID: 951619976}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.06, y: 0.3}
-  m_AnchorMax: {x: 0.94, y: 0.65}
+  m_AnchorMin: {x: 0.06, y: 0.29}
+  m_AnchorMax: {x: 0.94, y: 0.42}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
@@ -23805,8 +23810,8 @@ RectTransform:
   m_Children: []
   m_Father: {fileID: 1233027532}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.06, y: 0.3}
-  m_AnchorMax: {x: 0.94, y: 0.65}
+  m_AnchorMin: {x: 0.06, y: 0.29}
+  m_AnchorMax: {x: 0.94, y: 0.42}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
@@ -24017,8 +24022,8 @@ RectTransform:
   m_Children: []
   m_Father: {fileID: 163772607}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.06, y: 0.3}
-  m_AnchorMax: {x: 0.94, y: 0.65}
+  m_AnchorMin: {x: 0.06, y: 0.29}
+  m_AnchorMax: {x: 0.94, y: 0.42}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
@@ -25044,13 +25049,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a7e31b09ee794fa19199cdf77264b265, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::UI3DModelPreview
-  modelPrefab: {fileID: 0}
+  modelPrefab: {fileID: 904396547118330029, guid: 2cc0f531528875d4e966bb0afa5f5966, type: 3}
   modelRotation: {x: 18, y: -28, z: 0}
   modelScale: 1
   modelOffset: {x: 0, y: 0, z: 0}
   previewImage: {fileID: 302734125}
-  previewAnchorMin: {x: 0.18, y: 0.43}
-  previewAnchorMax: {x: 0.82, y: 0.94}
+  previewAnchorMin: {x: 0.18, y: 0.63}
+  previewAnchorMax: {x: 0.82, y: 0.97}
   slowlyRotate: 1
   rotationSpeed: 18
   cameraSize: 1.25

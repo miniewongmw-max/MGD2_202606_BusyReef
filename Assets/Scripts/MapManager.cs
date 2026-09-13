@@ -51,8 +51,10 @@ public class MapManager : MonoBehaviour
     public float sideDecorationChance = .48f;
     [Tooltip("Random scale range applied to each side decoration.")]
     public Vector2 sideDecorationScaleRange = new Vector2(.82f, 1.18f);
-    [Tooltip("Visible bottom height above the side border tile.")]
-    public float sideDecorationSurfaceHeight = -.22f;
+    [Tooltip("Fallback surface height if a side border tile has no renderer. Normally the tile's visible top is measured automatically.")]
+    public float sideDecorationSurfaceHeight = .10f;
+    [Tooltip("Visible-bottom offset above the border tile for each Side Decoration Prefabs slot. Element 0 is Coral; Element 1 is Starfish. Lower the value to lower that asset.")]
+    public float[] sideDecorationHeightOffsets = { .05f, .02f, 0f, 0f };
     [Tooltip("Moves side decorations slightly behind the centre of their row.")]
     public float sideDecorationBehindOffset = .24f;
 
@@ -569,8 +571,20 @@ public class MapManager : MonoBehaviour
     private void SpawnSideDecorations(Transform container)
     {
         if (container == null) return;
-        TrySpawnSideDecoration(container, -5f);
-        TrySpawnSideDecoration(container, 5f);
+        int generatedWidth = Mathf.Max(11, width);
+        if (generatedWidth % 2 == 0) generatedWidth++;
+        int outermostLane = generatedWidth / 2;
+        int nearEdgeLane = Mathf.Min(8, outermostLane);
+
+        // Spread the same small number of decorations across side tiles.
+        // Keep one opportunity near the playable edge, with an occasional
+        // farther one, instead of filling every border tile on mobile.
+        for (int side = -1; side <= 1; side += 2)
+        {
+            TrySpawnSideDecoration(container, side * Random.Range(5, nearEdgeLane + 1));
+            if (outermostLane > nearEdgeLane && Random.value < .5f)
+                TrySpawnSideDecoration(container, side * Random.Range(nearEdgeLane + 1, outermostLane + 1));
+        }
     }
 
     private void TrySpawnSideDecoration(Transform container, float laneX)
@@ -602,7 +616,28 @@ public class MapManager : MonoBehaviour
             body.isKinematic = true;
             body.useGravity = false;
         }
-        PrefabGrounding.AlignVisibleBottom(decoration, container, sideDecorationSurfaceHeight);
+        float heightOffset = sideDecorationHeightOffsets != null && decorationType < sideDecorationHeightOffsets.Length
+            ? sideDecorationHeightOffsets[decorationType]
+            : 0f;
+        float decorationHeight = GetSideBorderSurfaceHeight(container, laneX) + heightOffset;
+        PrefabGrounding.AlignVisibleBottom(decoration, container, decorationHeight);
+    }
+
+    private float GetSideBorderSurfaceHeight(Transform container, float laneX)
+    {
+        Transform row = container.parent;
+        if (row == null) return sideDecorationSurfaceHeight;
+
+        float highestSurfaceY = float.NegativeInfinity;
+        foreach (Transform tile in row)
+        {
+            if (tile == container || Mathf.Abs(tile.localPosition.x - laneX) > .05f) continue;
+            foreach (Renderer renderer in tile.GetComponentsInChildren<Renderer>(true))
+                highestSurfaceY = Mathf.Max(highestSurfaceY, renderer.bounds.max.y);
+        }
+        if (float.IsNegativeInfinity(highestSurfaceY)) return sideDecorationSurfaceHeight;
+        float localSurfaceY = container.InverseTransformPoint(new Vector3(0f, highestSurfaceY, 0f)).y;
+        return Mathf.Max(sideDecorationSurfaceHeight, localSurfaceY);
     }
 
     private static GameObject CreatePlaceholderDecoration(Transform parent, int type)

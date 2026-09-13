@@ -31,6 +31,9 @@ public class UI3DModelPreview : MonoBehaviour
     private GameObject lastPrefab;
     private bool rebuildRequested = true;
     private int previewLaneId;
+    private float lastRenderTime;
+    private bool needsRender;
+    private readonly Vector3[] screenCorners = new Vector3[4];
 
     private void OnEnable() => rebuildRequested = true;
 
@@ -44,9 +47,27 @@ public class UI3DModelPreview : MonoBehaviour
     {
         if (lastPrefab != modelPrefab) rebuildRequested = true;
         if (rebuildRequested) RebuildPreview();
-        if (modelInstance != null && slowlyRotate)
-            modelInstance.Rotate(Vector3.up, rotationSpeed * Time.unscaledDeltaTime, Space.Self);
-        if (previewCamera != null) previewCamera.Render();
+        if (modelInstance == null || previewCamera == null || !IsVisibleOnScreen()) return;
+        float now = Time.realtimeSinceStartup;
+        if (!needsRender && (!slowlyRotate || now - lastRenderTime < .1f)) return;
+        if (slowlyRotate && lastRenderTime > 0f)
+            modelInstance.Rotate(Vector3.up, rotationSpeed * Mathf.Min(now - lastRenderTime, .25f), Space.Self);
+        previewCamera.Render();
+        lastRenderTime = now;
+        needsRender = false;
+    }
+
+    private bool IsVisibleOnScreen()
+    {
+        if (previewImage == null || !previewImage.gameObject.activeInHierarchy) return false;
+        Canvas canvas = previewImage.canvas;
+        if (canvas == null || canvas.renderMode != RenderMode.ScreenSpaceOverlay) return true;
+        previewImage.rectTransform.GetWorldCorners(screenCorners);
+        float left = Mathf.Min(screenCorners[0].x, screenCorners[2].x);
+        float right = Mathf.Max(screenCorners[0].x, screenCorners[2].x);
+        float bottom = Mathf.Min(screenCorners[0].y, screenCorners[2].y);
+        float top = Mathf.Max(screenCorners[0].y, screenCorners[2].y);
+        return right > 0f && left < Screen.width && top > 0f && bottom < Screen.height;
     }
 
     private void OnDisable() => ReleasePreview();
@@ -120,6 +141,7 @@ public class UI3DModelPreview : MonoBehaviour
         cameraObject.transform.SetParent(previewRoot.transform, false);
         cameraObject.transform.localPosition = new Vector3(0f, 0f, -6f);
         previewCamera = cameraObject.AddComponent<Camera>();
+        previewCamera.enabled = false;
         previewCamera.orthographic = true;
         previewCamera.orthographicSize = cameraSize;
         previewCamera.clearFlags = CameraClearFlags.SolidColor;
@@ -138,7 +160,8 @@ public class UI3DModelPreview : MonoBehaviour
         light.cullingMask = 1 << 31;
         previewRoot.SetActive(true);
         FitModelToCamera();
-        previewCamera.Render();
+        lastRenderTime = 0f;
+        needsRender = true;
     }
 
     private void FitModelToCamera()
