@@ -420,7 +420,7 @@ public class MainMenuBehaviour : MonoBehaviour
             cards[i] = card.rectTransform;
             OceanUI.SetCentered(cards[i], Vector2.zero, new Vector2(430f, 270f));
             TMP_Text name = OceanUI.CreateText(modeName, card.transform, 39f, OceanUI.Deep);
-            OceanUI.SetRect(name.rectTransform, new Vector2(.06f, .50f), new Vector2(.94f, .88f), Vector2.zero, Vector2.zero);
+            OceanUI.SetRect(name.rectTransform, new Vector2(.06f, .56f), new Vector2(.94f, .94f), Vector2.zero, Vector2.zero);
             TMP_Text description = OceanUI.CreateText(ModeDescriptions[i], card.transform, 21f, OceanUI.Deep);
             OceanUI.SetRect(description.rectTransform, new Vector2(.08f, .10f), new Vector2(.92f, .52f), Vector2.zero, Vector2.zero);
         }

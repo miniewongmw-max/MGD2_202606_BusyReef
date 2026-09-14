@@ -150,8 +150,8 @@ public class GameManager : MonoBehaviour
         Image pearlPanel = OceanUI.CreatePanel("Pearls", root, Color.clear);
         pearlPanel.raycastTarget = false;
         pearlChip = pearlPanel.gameObject;
-        OceanUI.SetRect(pearlPanel.rectTransform, new Vector2(0.025f, 0.885f), new Vector2(0.36f, 0.98f), Vector2.zero, Vector2.zero);
-        pearlText = OceanUI.CreateText("PEARL  0", pearlPanel.transform, 46f, OceanUI.Sand, TextAlignmentOptions.Left);
+        OceanUI.SetRect(pearlPanel.rectTransform, new Vector2(0.025f, 0.885f), new Vector2(0.39f, 0.98f), Vector2.zero, Vector2.zero);
+        pearlText = OceanUI.CreateText("PEARL  0", pearlPanel.transform, 52f, OceanUI.Sand, TextAlignmentOptions.Left);
         pearlText.name = "Pearl Text";
         OceanUI.SetRect(pearlText.rectTransform, new Vector2(.26f, 0f), Vector2.one, Vector2.zero, Vector2.zero);
         UI3DModelPreview pearlPreview = pearlPanel.gameObject.AddComponent<UI3DModelPreview>();
@@ -167,9 +167,9 @@ public class GameManager : MonoBehaviour
         OceanUI.SetRect(scoreChip.rectTransform, new Vector2(0.67f, 0.885f), new Vector2(0.975f, 0.98f), Vector2.zero, Vector2.zero);
         scoreText = OceanUI.CreateText("0", scoreChip.transform, 100f, OceanUI.Foam, TextAlignmentOptions.Right);
         scoreText.name = "Score Text";
-        bestScoreText = OceanUI.CreateText("BEST  0", root, 42f, OceanUI.Sand, TextAlignmentOptions.Right);
+        bestScoreText = OceanUI.CreateText("BEST  0", root, 48f, OceanUI.Sand, TextAlignmentOptions.Right);
         bestScoreText.name = "Best Score";
-        OceanUI.SetRect(bestScoreText.rectTransform, new Vector2(0.67f, 0.835f), new Vector2(0.975f, 0.88f), Vector2.zero, Vector2.zero);
+        OceanUI.SetRect(bestScoreText.rectTransform, new Vector2(0.67f, 0.825f), new Vector2(0.975f, 0.88f), Vector2.zero, Vector2.zero);
         timerText = OceanUI.CreateText("", root, 28f, OceanUI.Coral, TextAlignmentOptions.Right);
         timerText.name = "Timer Text";
         timerText.fontSize = 52f;
@@ -178,9 +178,9 @@ public class GameManager : MonoBehaviour
 
         pauseButton = OceanUI.CreateButton("Pause", "II", root, Color.clear, TogglePause);
         TMP_Text pauseLabel = pauseButton.GetComponentInChildren<TMP_Text>();
-        pauseLabel.fontSize = 56f;
+        pauseLabel.fontSize = 64f;
         pauseLabel.color = OceanUI.Sand;
-        OceanUI.SetRect(pauseButton.GetComponent<RectTransform>(), new Vector2(.865f, .805f), new Vector2(.995f, .885f), Vector2.zero, Vector2.zero);
+        OceanUI.SetRect(pauseButton.GetComponent<RectTransform>(), new Vector2(.845f, .795f), new Vector2(.995f, .885f), Vector2.zero, Vector2.zero);
         pauseButton.gameObject.SetActive(false);
 
         CreateGameplayEquipmentIcons(root);
@@ -198,7 +198,7 @@ public class GameManager : MonoBehaviour
 
         Image objective = OceanUI.CreatePanel("Tutorial Objective", root, new Color(0.02f, 0.20f, 0.29f, 0.90f));
         tutorialObjectivePanel = objective.gameObject;
-        OceanUI.SetRect(objective.rectTransform, new Vector2(0.12f, 0.70f), new Vector2(0.88f, 0.79f), Vector2.zero, Vector2.zero);
+        OceanUI.SetRect(objective.rectTransform, new Vector2(0.12f, 0.735f), new Vector2(0.88f, 0.825f), Vector2.zero, Vector2.zero);
         tutorialObjectiveText = OceanUI.CreateText("", objective.transform, 28f, OceanUI.Sand);
         tutorialObjectiveText.name = "Tutorial Objective Text";
         tutorialObjectivePanel.SetActive(false);
@@ -853,12 +853,12 @@ public class GameManager : MonoBehaviour
                 // Pack active powers into the first slots under the pearl HUD;
                 // unused or expired powers leave no visual gaps.
                 RectTransform rect = icon.rectTransform;
-                // Time Attack reserves the strip directly below pearls for its
-                // timer; shift this same authored two-row layout beneath it.
-                Vector2 timerOffset = GameSession.Mode == FishGameMode.TimeAttack
-                    ? new Vector2(0f, .08f) : Vector2.zero;
-                rect.anchorMin = gameplayPowerSlotMin[nextSlot] - timerOffset;
-                rect.anchorMax = gameplayPowerSlotMax[nextSlot] - timerOffset;
+                // Keep icons below the Time Attack timer or tutorial objective.
+                float hudOffset = GameSession.Mode == FishGameMode.TimeAttack ? .08f
+                    : GameSession.Mode == FishGameMode.Tutorial ? .14f : 0f;
+                Vector2 modeOffset = new Vector2(0f, hudOffset);
+                rect.anchorMin = gameplayPowerSlotMin[nextSlot] - modeOffset;
+                rect.anchorMax = gameplayPowerSlotMax[nextSlot] - modeOffset;
                 rect.anchoredPosition = gameplayPowerSlotPosition[nextSlot];
                 rect.sizeDelta = gameplayPowerSlotSize[nextSlot];
                 nextSlot++;
@@ -975,11 +975,11 @@ public class GameManager : MonoBehaviour
     {
         Image icon = OceanUI.CreatePanel(iconName, root, EquipmentPlaceholderColor(index));
         icon.raycastTarget = false;
-        int column = index % 3;
-        int row = index / 3;
-        float left = .03f + column * .107f;
-        float top = row == 0 ? .87f : .775f;
-        OceanUI.SetRect(icon.rectTransform, new Vector2(left, top - .08f), new Vector2(left + .098f, top), Vector2.zero, Vector2.zero);
+        int column = index % 2;
+        int row = index / 2;
+        float left = .035f + column * .145f;
+        float top = row == 0 ? .87f : .755f;
+        OceanUI.SetRect(icon.rectTransform, new Vector2(left, top - .10f), new Vector2(left + .13f, top), Vector2.zero, Vector2.zero);
         icon.preserveAspect = true;
         return icon;
     }

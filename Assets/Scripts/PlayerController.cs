@@ -62,7 +62,7 @@ public class PlayerController : MonoBehaviour
             foreach (CollectibleItem item in FindObjectsByType<CollectibleItem>())
             {
                 if (item.kind == CollectibleKind.Pearl && Vector3.Distance(transform.position, item.transform.position) < 3.2f)
-                    item.Collect();
+                    item.BeginMagnetPull(transform);
             }
         }
     }
