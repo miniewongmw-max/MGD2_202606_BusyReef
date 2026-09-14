@@ -8,6 +8,7 @@ public class GameManager : MonoBehaviour
 {
     // Two pearls per row across eight rows makes the magnet pull clearly visible.
     private const int TutorialMagnetPearlGoal = 16;
+    private const float CrabEscapeSeconds = 5f;
 
     private enum TutorialLesson
     {
@@ -46,6 +47,7 @@ public class GameManager : MonoBehaviour
     private TMP_Text statusText;
     private TMP_Text powerText;
     private TMP_Text crabText;
+    private Image crabTimerImage;
     private TMP_Text tutorialObjectiveText;
     private Image inkCloud;
     private GameObject pauseOverlay;
@@ -72,6 +74,7 @@ public class GameManager : MonoBehaviour
     private float magnetTimerDuration;
     private float invincibleTimerDuration;
     private int crabStep = -1;
+    private float crabEscapeEndsAt;
     private SeaObstacle crabObstacle;
     private float crabSafeUntil;
     private Coroutine statusRoutine;
@@ -120,6 +123,12 @@ public class GameManager : MonoBehaviour
     private void Update()
     {
         if (!gameStarted || gameOver || paused) return;
+
+        if (crabStep >= 0)
+        {
+            UpdateCrabEscapeTimer();
+            if (gameOver) return;
+        }
 
         if (GameSession.Mode == FishGameMode.TimeAttack)
         {
@@ -222,6 +231,7 @@ public class GameManager : MonoBehaviour
         crabText = OceanUI.CreateText("", root, 43f, OceanUI.Foam);
         crabText.name = "Crab Escape Text";
         OceanUI.SetRect(crabText.rectTransform, new Vector2(0.08f, 0.37f), new Vector2(0.92f, 0.62f), Vector2.zero, Vector2.zero);
+        EnsureCrabTimerImage();
         crabText.gameObject.SetActive(false);
     }
 
@@ -262,6 +272,7 @@ public class GameManager : MonoBehaviour
         tutorialCompleteOverlay = FindDeepChild(root, "TUTORIAL COMPLETE")?.gameObject;
         resultText = ComponentAt<TMP_Text>(canvas.transform, "Result Text");
         crabText = ComponentAt<TMP_Text>(root, "Crab Escape Text");
+        EnsureCrabTimerImage();
         inkCloud = ComponentAt<Image>(canvas.transform, "Ink Cloud");
         FitInkToScreen();
         EnsureGameplayEquipmentIcons(root);
@@ -276,7 +287,7 @@ public class GameManager : MonoBehaviour
         WireButton(ComponentAt<Button>(pauseOverlay != null ? pauseOverlay.transform : null, "Primary"), TogglePause);
         WireButton(ComponentAt<Button>(pauseOverlay != null ? pauseOverlay.transform : null, "Secondary"), GoToMenu);
         WireButton(ComponentAt<Button>(gameOverOverlay != null ? gameOverOverlay.transform : null, "Retry"), Restart);
-        WireButton(ComponentAt<Button>(gameOverOverlay != null ? gameOverOverlay.transform : null, "Hub"), GoToMenu);
+        SetActive(FindDeepChild(gameOverOverlay != null ? gameOverOverlay.transform : null, "Hub")?.gameObject, false);
         WireButton(ComponentAt<Button>(tutorialCompleteOverlay != null ? tutorialCompleteOverlay.transform : null, "Primary"), GoToMenu);
 
         SetActive(pearlChip, false);
@@ -362,10 +373,7 @@ public class GameManager : MonoBehaviour
         resultText.name = "Result Text";
         OceanUI.SetRect(resultText.rectTransform, new Vector2(0.08f, 0.35f), new Vector2(0.92f, 0.72f), Vector2.zero, Vector2.zero);
         Button retry = OceanUI.CreateButton("Retry", "RETRY", content, OceanUI.Sand, Restart);
-        OceanUI.SetRect(retry.GetComponent<RectTransform>(), new Vector2(0.25f, 0.12f), new Vector2(0.75f, 0.22f), Vector2.zero, Vector2.zero);
-        Button hub = OceanUI.CreateButton("Hub", "MAIN MENU", content, OceanUI.Panel, GoToMenu);
-        OceanUI.SetRect(hub.GetComponent<RectTransform>(), new Vector2(0.34f, 0.045f), new Vector2(0.66f, 0.105f), Vector2.zero, Vector2.zero);
-        hub.GetComponentInChildren<TMP_Text>().fontSize = 24f;
+        OceanUI.SetRect(retry.GetComponent<RectTransform>(), new Vector2(0.25f, 0.07f), new Vector2(0.75f, 0.19f), Vector2.zero, Vector2.zero);
         return overlay;
     }
 
@@ -436,6 +444,7 @@ public class GameManager : MonoBehaviour
         ApplyStageAtmosphere();
         FindAnyObjectByType<MapManager>()?.ResetForSelectedRun();
         FindAnyObjectByType<CameraController>()?.PrepareForSelectedRun();
+        UpdateHud();
     }
 
     public void TryStartFromTap()
@@ -786,10 +795,13 @@ public class GameManager : MonoBehaviour
     {
         if (crabStep >= 0 || Time.time < crabSafeUntil) return;
         crabStep = 0;
+        crabEscapeEndsAt = Time.time + CrabEscapeSeconds;
         crabObstacle = obstacle;
         trappedPlayer.SetInputLocked(true);
         crabText.gameObject.SetActive(true);
-        crabText.text = "CRAB GRAB!\nTAP | TAP | SWIPE\nTAP NOW";
+        crabText.fontSize = 43f;
+        crabText.text = "TAP!";
+        if (crabTimerImage != null) crabTimerImage.fillAmount = 1f;
     }
 
     public bool RegisterEscapeInput(bool tap)
@@ -810,9 +822,52 @@ public class GameManager : MonoBehaviour
         }
         else
         {
-            crabText.text = crabStep == 0 ? "CRAB GRAB!\nTAP | TAP | SWIPE\nTAP NOW" : crabStep == 1 ? "GOOD!\nTAP AGAIN" : "NOW SWIPE!";
+            crabText.fontSize = crabStep == 1 ? 30f : 43f;
+            crabText.text = crabStep == 0 ? "TAP!" : crabStep == 1 ? "TAP AGAIN!" : "SWIPE!";
         }
         return true;
+    }
+
+    private void EnsureCrabTimerImage()
+    {
+        if (crabText == null) return;
+        Transform existing = crabText.transform.Find("Crab Escape Timer");
+        crabTimerImage = existing != null ? existing.GetComponent<Image>() : null;
+        if (crabTimerImage == null)
+        {
+            GameObject timer = new GameObject("Crab Escape Timer", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
+            timer.transform.SetParent(crabText.transform, false);
+            crabTimerImage = timer.GetComponent<Image>();
+            OceanUI.SetCentered(crabTimerImage.rectTransform, Vector2.zero, new Vector2(300f, 300f));
+            crabTimerImage.color = new Color(1f, .89f, .45f, .95f);
+        }
+        crabTimerImage.sprite = PowerTimerSprite.Get();
+        crabTimerImage.type = Image.Type.Filled;
+        crabTimerImage.fillMethod = Image.FillMethod.Radial360;
+        crabTimerImage.fillOrigin = 2;
+        crabTimerImage.fillClockwise = false;
+        crabTimerImage.fillAmount = 1f;
+        crabTimerImage.raycastTarget = false;
+    }
+
+    private void UpdateCrabEscapeTimer()
+    {
+        float remaining = crabEscapeEndsAt - Time.time;
+        if (crabTimerImage != null) crabTimerImage.fillAmount = Mathf.Clamp01(remaining / CrabEscapeSeconds);
+        if (remaining > 0f) return;
+        if (GameSession.Mode == FishGameMode.Tutorial)
+        {
+            crabStep = 0;
+            crabEscapeEndsAt = Time.time + CrabEscapeSeconds;
+            crabText.fontSize = 43f;
+            crabText.text = "TAP!";
+            if (crabTimerImage != null) crabTimerImage.fillAmount = 1f;
+            ShowStatus("TRY AGAIN!", .8f);
+            return;
+        }
+        crabStep = -1;
+        crabText.gameObject.SetActive(false);
+        GameOver("Caught by a crab");
     }
 
     public void ShowStatus(string message, float duration)
@@ -835,6 +890,7 @@ public class GameManager : MonoBehaviour
         scoreText.text = score.ToString();
         if (bestScoreText != null)
         {
+            bestScoreText.gameObject.SetActive(GameSession.Mode != FishGameMode.Tutorial);
             int savedBest = PlayerPrefs.GetInt($"Fishfish.HighScore.{GameSession.Mode}", 0);
             bestScoreText.text = $"BEST  {Mathf.Max(savedBest, score)}";
         }
@@ -1018,11 +1074,18 @@ public class GameManager : MonoBehaviour
         if (tutorialObjectivePanel != null) tutorialObjectivePanel.SetActive(false);
         playerController?.SetInputLocked(true);
         GameSession.BankRunPearls();
-        string key = $"Fishfish.HighScore.{GameSession.Mode}";
-        int best = Mathf.Max(score, PlayerPrefs.GetInt(key, 0));
-        PlayerPrefs.SetInt(key, best);
-        PlayerPrefs.Save();
-        resultText.text = $"{reason.ToUpperInvariant()}\n\nSCORE\n{score}\n\nBEST  {best}     PEARLS  {GameSession.PearlWallet}";
+        if (GameSession.Mode == FishGameMode.Tutorial)
+        {
+            resultText.text = $"{reason.ToUpperInvariant()}\n\nSCORE\n{score}\n\nPEARLS  {GameSession.PearlWallet}";
+        }
+        else
+        {
+            string key = $"Fishfish.HighScore.{GameSession.Mode}";
+            int best = Mathf.Max(score, PlayerPrefs.GetInt(key, 0));
+            PlayerPrefs.SetInt(key, best);
+            PlayerPrefs.Save();
+            resultText.text = $"{reason.ToUpperInvariant()}\n\nSCORE\n{score}\n\nBEST  {best}     PEARLS  {GameSession.PearlWallet}";
+        }
         gameOverOverlay.SetActive(true);
     }
 

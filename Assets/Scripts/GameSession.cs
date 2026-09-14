@@ -44,7 +44,7 @@ public static class GameSession
     public static bool TutorialComplete => PlayerPrefs.GetInt(TutorialKey, 0) == 1;
     public static bool ShowTouchControls
     {
-        get => PlayerPrefs.GetInt(TouchControlsKey, Application.isMobilePlatform ? 1 : 0) == 1;
+        get => PlayerPrefs.GetInt(TouchControlsKey, 0) == 1;
         set
         {
             PlayerPrefs.SetInt(TouchControlsKey, value ? 1 : 0);

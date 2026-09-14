@@ -8,7 +8,7 @@ public class TouchMoveButton : MonoBehaviour, IPointerDownHandler
 
     public void OnPointerDown(PointerEventData eventData)
     {
-        if (GameManager.Instance != null && GameManager.Instance.RegisterEscapeInput(false)) return;
+        if (GameManager.Instance != null && GameManager.Instance.RegisterEscapeInput(true)) return;
         if (player != null) player.QueueMove(direction);
     }
 }

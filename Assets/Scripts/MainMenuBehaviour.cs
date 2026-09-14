@@ -20,7 +20,7 @@ public class MainMenuBehaviour : MonoBehaviour
     private GameObject aboutPanel;
     private GameObject powerShop, characterShop;
     private StageCarousel3D carousel;
-    private Button stagePrevious, stageNext;
+    private Button stagePrevious, stageNext, stageSelectButton;
     private readonly Image[] readyEquipmentIcons = new Image[5];
     private readonly Vector2[] readySlotMin = new Vector2[5];
     private readonly Vector2[] readySlotMax = new Vector2[5];
@@ -134,6 +134,7 @@ public class MainMenuBehaviour : MonoBehaviour
         carousel = ComponentAt<StageCarousel3D>(root, "3D Circular Mode Carousel");
         stagePrevious = ComponentAt<Button>(root, "Previous");
         stageNext = ComponentAt<Button>(root, "Next");
+        stageSelectButton = ComponentAt<Button>(root, "Select Mode");
         stageTitle = ComponentAt<TMP_Text>(root, "Selected Mode Title");
         stageDescription = ComponentAt<TMP_Text>(root, "Selected Mode Description");
         homeText = ComponentAt<TMP_Text>(root, "Home Summary");
@@ -172,16 +173,20 @@ public class MainMenuBehaviour : MonoBehaviour
         if (carousel != null && carousel.cards != null && carousel.cards.Length == CarouselModes.Length)
         {
             carousel.Configure(carousel.cards, (int)GameSession.Mode);
-            carousel.SelectionChanged = i =>
-            {
-                GameSession.Mode = CarouselModes[Mathf.Clamp(i, 0, CarouselModes.Length - 1)];
-                GameSession.SelectedStage = 0;
-                GameManager.Instance?.PreviewSelectedStage();
-                RefreshAll();
-            };
+            carousel.SelectionChanged = _ => RefreshAll();
         }
         WireButton(stagePrevious, carousel != null ? carousel.Previous : null);
         WireButton(stageNext, carousel != null ? carousel.Next : null);
+        if (stageSelectButton == null)
+        {
+            Transform modePage = FindDeepChild(root, "Mode Selection Page");
+            if (modePage != null)
+            {
+                stageSelectButton = OceanUI.CreateButton("Select Mode", "SELECT", modePage, OceanUI.ButtonFrame, null);
+                OceanUI.SetRect(stageSelectButton.GetComponent<RectTransform>(), new Vector2(.34f, .01f), new Vector2(.66f, .09f), Vector2.zero, Vector2.zero);
+            }
+        }
+        WireButton(stageSelectButton, SelectCarouselMode);
         WireButton(ComponentAt<Button>(root, "Power Category"), () => ShopCategory(true));
         WireButton(ComponentAt<Button>(root, "Character Category"), () => ShopCategory(false));
         for (int i = 0; i < PowerNames.Length; i++)
@@ -425,13 +430,7 @@ public class MainMenuBehaviour : MonoBehaviour
             OceanUI.SetRect(description.rectTransform, new Vector2(.08f, .10f), new Vector2(.92f, .52f), Vector2.zero, Vector2.zero);
         }
         carousel.Configure(cards, (int)GameSession.Mode);
-        carousel.SelectionChanged = i =>
-        {
-            GameSession.Mode = CarouselModes[Mathf.Clamp(i, 0, CarouselModes.Length - 1)];
-            GameSession.SelectedStage = 0;
-            GameManager.Instance?.PreviewSelectedStage();
-            RefreshAll();
-        };
+        carousel.SelectionChanged = _ => RefreshAll();
         stagePrevious = OceanUI.CreateButton("Previous", "<", page, OceanUI.Panel, carousel.Previous);
         stageNext = OceanUI.CreateButton("Next", ">", page, OceanUI.Panel, carousel.Next);
         OceanUI.SetRect(stagePrevious.GetComponent<RectTransform>(), new Vector2(.02f, .47f), new Vector2(.14f, .61f), Vector2.zero, Vector2.zero);
@@ -441,8 +440,22 @@ public class MainMenuBehaviour : MonoBehaviour
         stageTitle.name = "Selected Mode Title";
         stageDescription.name = "Selected Mode Description";
         OceanUI.SetRect(stageTitle.rectTransform, new Vector2(.08f, .18f), new Vector2(.92f, .28f), Vector2.zero, Vector2.zero);
-        OceanUI.SetRect(stageDescription.rectTransform, new Vector2(.08f, .07f), new Vector2(.92f, .19f), Vector2.zero, Vector2.zero);
+        OceanUI.SetRect(stageDescription.rectTransform, new Vector2(.08f, .105f), new Vector2(.92f, .19f), Vector2.zero, Vector2.zero);
+        stageSelectButton = OceanUI.CreateButton("Select Mode", "SELECT", page, OceanUI.ButtonFrame, SelectCarouselMode);
+        OceanUI.SetRect(stageSelectButton.GetComponent<RectTransform>(), new Vector2(.34f, .01f), new Vector2(.66f, .09f), Vector2.zero, Vector2.zero);
         return page;
+    }
+
+    private void SelectCarouselMode()
+    {
+        if (carousel == null) return;
+        FishGameMode selected = CarouselModes[Mathf.Clamp(carousel.SelectedIndex, 0, CarouselModes.Length - 1)];
+        if (GameSession.Mode == selected) return;
+        GameSession.Mode = selected;
+        GameSession.SelectedStage = 0;
+        GameManager.Instance?.PreviewSelectedStage();
+        GameManager.Instance?.RefreshHudAfterReset();
+        RefreshAll();
     }
 
     private RectTransform BuildShopPage()
@@ -999,10 +1012,16 @@ public class MainMenuBehaviour : MonoBehaviour
         }
         if (stageTitle != null)
         {
-            int i = Mathf.Clamp((int)GameSession.Mode, 0, CarouselModes.Length - 1);
-            string modeName = DisplayModeName(GameSession.Mode);
+            int i = Mathf.Clamp(carousel != null ? carousel.SelectedIndex : (int)GameSession.Mode, 0, CarouselModes.Length - 1);
+            FishGameMode previewMode = CarouselModes[i];
+            string modeName = DisplayModeName(previewMode);
             stageTitle.text = modeName + " MODE";
-            stageDescription.text = ModeDescriptions[i];
+            if (previewMode != FishGameMode.Tutorial)
+                stageTitle.text += $"\nBEST  {PlayerPrefs.GetInt($"Fishfish.HighScore.{previewMode}", 0)}";
+            if (stageDescription != null) stageDescription.text = ModeDescriptions[i];
+            bool selected = previewMode == GameSession.Mode;
+            SetButtonText(stageSelectButton, selected ? "SELECTED" : "SELECT");
+            if (stageSelectButton != null) stageSelectButton.interactable = !selected;
         }
         carousel?.SetTutorialLocked(false);
         if (stagePrevious != null) stagePrevious.gameObject.SetActive(true);
