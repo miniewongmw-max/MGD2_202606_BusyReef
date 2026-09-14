@@ -2447,15 +2447,40 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "WHAT IS BUSY REEF?\n[Write a short description of the game, its goal,
-    and the underwater journey here.]\n\nTEAM MEMBERS & ROLES\n1. [Member One] \u2014
-    [Role / responsibilities]\n\n2. [Member Two] \u2014 [Role / responsibilities]\n\n3.
-    [Member Three] \u2014 [Role / responsibilities]\n\n4. [Member Four] \u2014 [Role
-    / responsibilities]\n\nTHIRD-PARTY ASSETS\n\u2022 [Asset name] \u2014 [Creator
-    / source / licence]\n\u2022 [Asset name] \u2014 [Creator / source / licence]\n\u2022
-    Creamy Chicken font \u2014 [Add creator and licence]\n\nTOOLS & ACKNOWLEDGEMENTS\n[List
-    software, libraries, audio, tutorials, and other credits.]\n\nVERSION\n[Version
-    number and date]"
+  m_text: "WHAT IS BUSY REEF?\n\nBusy Reef is a 3D top-down endless arcade adventure
+    game for Android mobile devices. Players control a lost baby sea turtle travelling
+    through a lively underwater world in search of its family. Using simple swipe
+    controls, players move tile by tile while avoiding sea creatures and environmental
+    hazards and keeping ahead of the continuously scrolling camera.\n\nThe goal is
+    to survive as long as possible, travel farther, collect pearls and treasures,
+    and achieve a high score. As the journey continues, obstacles become more challenging
+    and players must make faster decisions to survive.\n\nTEAM MEMBERS & ROLES\n\n1.
+    Soh Tan Qi Heng \u2014 Lead Programmer / Game & System Developer\nResponsible
+    for core gameplay programming, player movement and touch input, camera and procedural
+    generation, obstacle behaviours, power-ups, game modes, HUD, settings, save/progression
+    systems, audio integration, and overall system integration and enhancement.\n\n2.
+    Kho Boon Pin \u2014 Shop System / Documentation\nResponsible for the basic shop
+    system and documentation, while assisting with gameplay design, shop enhancement,
+    testing, integration, presentation slides, and final submission.\n\n3. Pang Jing
+    Xuan \u2014 Main Menu / Audio / Presentation\nResponsible for the basic main
+    menu, audio and sound-effect sourcing, and presentation work, while assisting
+    with menu enhancement, documentation, testing, integration, and final submission.\n\n4.
+    Wong Shi Qi \u2014 3D Artist / UI & Visual Design\nResponsible for 3D characters
+    and sea creatures, environment and obstacle assets, UI artwork, lighting and
+    materials, while assisting with level design, visual effects, HUD, settings UI,
+    model previews, testing, and integration.\n\nTHIRD-PARTY ASSETS\n\n\u2022 [3D
+    Asset Name] \u2014 [Creator / Source / Licence]\n\u2022 [Audio/SFX Asset Name]
+    \u2014 [Creator / Source / Licence]\n\u2022 Creamy Chicken font \u2014 [Creator
+    / Source / Licence]\n\n\nTOOLS & ACKNOWLEDGEMENTS\n\nUnity \u2014 Game engine
+    and game development\nVisual Studio \u2014 C# programming\nBlender \u2014 3D
+    model creation and editing\nAdobe Photoshop / Procreate \u2014 UI and texture
+    design\nGitHub \u2014 Version control and team collaboration\n\nBusy Reef's gameplay
+    and presentation were inspired by Crossy Road, Animal Crossing, Subway Surfers,
+    and Finding Nemo. Crossy Road influenced the tile-based endless gameplay, Animal
+    Crossing influenced the colourful and friendly visual direction, Subway Surfers
+    influenced the progression system, and Finding Nemo inspired the theme of a young
+    sea creature searching for its family.\n\nVERSION\n\nVersion 1.0 \u2014 September
+    2026"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: ba3ab56f15e5ced479c61bd1d97ce8be, type: 2}
   m_sharedMaterial: {fileID: 3035097212100031486, guid: ba3ab56f15e5ced479c61bd1d97ce8be, type: 2}
