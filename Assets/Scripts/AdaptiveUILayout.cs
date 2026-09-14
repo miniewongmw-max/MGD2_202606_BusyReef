@@ -33,7 +33,7 @@ public class AdaptiveUILayout : MonoBehaviour
         }
         if (dpad != null)
         {
-            dpad.anchorMin = dpad.anchorMax = landscape ? new Vector2(0.87f, 0.25f) : new Vector2(0.5f, 0.14f);
+            dpad.anchorMin = dpad.anchorMax = landscape ? new Vector2(0.87f, 0.25f) : new Vector2(0.78f, 0.14f);
             dpad.anchoredPosition = Vector2.zero;
         }
     }
