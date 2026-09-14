@@ -468,10 +468,18 @@ public class MainMenuBehaviour : MonoBehaviour
         Button chars = OceanUI.CreateButton("Character Category", "CHARACTERS", page, OceanUI.Sand, () => ShopCategory(false));
         OceanUI.SetRect(powers.GetComponent<RectTransform>(), new Vector2(.10f, .63f), new Vector2(.49f, .72f), Vector2.zero, Vector2.zero);
         OceanUI.SetRect(chars.GetComponent<RectTransform>(), new Vector2(.51f, .63f), new Vector2(.90f, .72f), Vector2.zero, Vector2.zero);
-        Image shopWallet = OceanUI.CreatePanel("Shop Wallet", page, new Color(0.02f, 0.20f, 0.29f, 0.96f));
+        Image shopWallet = OceanUI.CreatePanel("Shop Wallet", page, Color.clear);
+        shopWallet.raycastTarget = false;
         OceanUI.SetRect(shopWallet.rectTransform, new Vector2(.76f, .74f), new Vector2(.93f, .82f), Vector2.zero, Vector2.zero);
+        UI3DModelPreview walletPearl = shopWallet.gameObject.AddComponent<UI3DModelPreview>();
+        walletPearl.modelPrefab = FindAnyObjectByType<MapManager>()?.pearlPrefab;
+        walletPearl.previewAnchorMin = new Vector2(0f, -.13f);
+        walletPearl.previewAnchorMax = new Vector2(.45f, 1.13f);
+        walletPearl.rotationSpeed = 48f;
+        walletPearl.EnsureOutputForEditor();
         shopWalletText = OceanUI.CreateText("", shopWallet.transform, 28f, OceanUI.Sand, TextAlignmentOptions.Right);
         shopWalletText.name = "Shop Wallet Text";
+        OceanUI.SetRect(shopWalletText.rectTransform, new Vector2(.44f, 0f), Vector2.one, Vector2.zero, Vector2.zero);
         powerShop = OceanUI.CreateObject("Power-up Stock", page);
         OceanUI.SetRect(powerShop.GetComponent<RectTransform>(), new Vector2(.04f, .12f), new Vector2(.96f, .61f), Vector2.zero, Vector2.zero);
         for (int i = 0; i < 4; i++) BuildPowerCard(powerShop.transform, i);
@@ -1174,10 +1182,10 @@ public class MainMenuBehaviour : MonoBehaviour
     public void RefreshWallet()
     {
         if (shopWalletText == null) return;
-        shopWalletText.text = $"PEARL  {GameSession.PearlWallet}";
+        shopWalletText.text = GameSession.PearlWallet.ToString();
         RectTransform panel = shopWalletText.transform.parent as RectTransform;
         if (panel == null) return;
-        float neededWidth = shopWalletText.GetPreferredValues(shopWalletText.text).x + 32f;
+        float neededWidth = Mathf.Max(120f, shopWalletText.GetPreferredValues(shopWalletText.text).x + 84f);
         panel.anchorMin = new Vector2(.93f, panel.anchorMin.y);
         panel.anchorMax = new Vector2(.93f, panel.anchorMax.y);
         panel.pivot = new Vector2(1f, panel.pivot.y);
