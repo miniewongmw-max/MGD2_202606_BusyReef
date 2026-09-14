@@ -857,8 +857,21 @@ public class MapManager : MonoBehaviour
 
     void CreateBonusCollectible(Transform container, List<int> freeLanes, CollectibleKind kind)
     {
-        int lane = freeLanes[Random.Range(0, freeLanes.Count)];
+        if (container == null) return;
+        List<int> vacantLanes = new List<int>();
+        foreach (int lane in freeLanes)
+            if (!HasCollectibleAtLane(container, lane)) vacantLanes.Add(lane);
+        if (vacantLanes.Count == 0) return;
+        int lane = vacantLanes[Random.Range(0, vacantLanes.Count)];
         SpawnCollectiblePrefab(kind, container, lane, collectibleHeight + .03f);
+    }
+
+    private static bool HasCollectibleAtLane(Transform container, int lane)
+    {
+        foreach (Transform child in container)
+            if (child.gameObject.activeSelf && child.GetComponent<CollectibleItem>() != null &&
+                Mathf.Abs(child.localPosition.x - lane) < 0.4f) return true;
+        return false;
     }
 
     private GameObject SpawnObstaclePrefab(SeaObstacleType type, Transform container)
@@ -899,6 +912,7 @@ public class MapManager : MonoBehaviour
 
     private GameObject SpawnCollectiblePrefab(CollectibleKind kind, Transform container, int lane, float height)
     {
+        if (container == null || HasCollectibleAtLane(container, lane)) return null;
         GameObject prefab = GetCollectiblePrefab(kind);
         if (prefab == null) return null;
         GameObject collectible = Instantiate(prefab, container);

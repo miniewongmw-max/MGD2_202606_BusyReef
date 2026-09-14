@@ -28,11 +28,17 @@ public class GameManager : MonoBehaviour
     public Sprite sealEquipmentIcon;
     [Tooltip("Assign in order: Bubble Shield, Speed Dash, Pearl Magnet, Invincibility.")]
     public Sprite[] powerEquipmentIcons = new Sprite[4];
+    [Header("Player Hit Effects")]
+    [Tooltip("Transparent bubble prefab shown around the player while Shield is ready.")]
+    public GameObject bubbleShieldEffectPrefab;
+    [Tooltip("Lightning sprite flashed around the player after an unprotected jellyfish hit.")]
+    public Sprite jellyfishZapSprite;
     [Range(0.05f, 0.24f)]
     [Tooltip("Lose when the visible character centre retreats below this height, measured from the bottom.")]
     public float retreatLossScreenY = 0.17f;
 
     private PlayerController playerController;
+    private PlayerVisualEffects playerVisualEffects;
     private TMP_Text scoreText;
     private TMP_Text bestScoreText;
     private TMP_Text pearlText;
@@ -90,6 +96,11 @@ public class GameManager : MonoBehaviour
         GameAudioManager.EnsureInstance();
         playerController = player != null ? player.GetComponent<PlayerController>() : FindAnyObjectByType<PlayerController>();
         if (player == null && playerController != null) player = playerController.transform;
+        if (player != null)
+        {
+            playerVisualEffects = gameObject.AddComponent<PlayerVisualEffects>();
+            playerVisualEffects.Configure(player, bubbleShieldEffectPrefab, jellyfishZapSprite);
+        }
         if (mainCamera == null) mainCamera = Camera.main;
         BindGameplayUI();
         ApplyStageAtmosphere();
@@ -189,6 +200,7 @@ public class GameManager : MonoBehaviour
         // physical display, including the notch and curved-edge padding.
         inkCloud = OceanUI.CreatePanel("Ink Cloud", canvas.transform, new Color(0.03f, 0.01f, 0.08f, 0.88f));
         OceanUI.Stretch(inkCloud.rectTransform, 0f);
+        FitInkToScreen();
         inkCloud.raycastTarget = false;
         inkCloud.gameObject.SetActive(false);
 
@@ -244,6 +256,7 @@ public class GameManager : MonoBehaviour
         resultText = ComponentAt<TMP_Text>(canvas.transform, "Result Text");
         crabText = ComponentAt<TMP_Text>(root, "Crab Escape Text");
         inkCloud = ComponentAt<Image>(canvas.transform, "Ink Cloud");
+        FitInkToScreen();
         EnsureGameplayEquipmentIcons(root);
 
         GameplayGestureInput gestures = ComponentAt<GameplayGestureInput>(root, "Swipe Surface");
@@ -434,6 +447,7 @@ public class GameManager : MonoBehaviour
             shieldReady = GameSession.ShieldReady;
         }
         gameStarted = true;
+        playerVisualEffects?.SetShieldActive(shieldReady);
         gameOver = false;
         paused = false;
         gameplayHub?.HideGameplayHub();
@@ -484,7 +498,7 @@ public class GameManager : MonoBehaviour
         GameSession.GrantPowerUp(index);
         switch (index)
         {
-            case 0: shieldReady = true; ShowStatus("BUBBLE SHIELD READY", 1.2f); break;
+            case 0: shieldReady = true; playerVisualEffects?.SetShieldActive(true); ShowStatus("BUBBLE SHIELD READY", 1.2f); break;
             case 1: speedDashReady = true; ShowStatus("SPEED DASH READY", 1.2f); break;
             case 2: magnetUntil = Mathf.Max(magnetUntil, Time.time) + 15f; ShowStatus("PEARL MAGNET", 1.2f); break;
             case 3: invincibleUntil = Mathf.Max(invincibleUntil, Time.time) + 8f; ShowStatus("INVINCIBLE BUBBLE", 1.2f); break;
@@ -701,9 +715,12 @@ public class GameManager : MonoBehaviour
     {
         if (!shieldReady) return false;
         shieldReady = false;
+        playerVisualEffects?.BreakShield();
         ShowStatus("BUBBLE SHIELD SAVED YOU!", 1.4f);
         return true;
     }
+
+    public void ShowJellyfishZap() => playerVisualEffects?.ShowZap();
 
     public bool TryConsumeSpeedDash()
     {
@@ -718,6 +735,15 @@ public class GameManager : MonoBehaviour
     {
         if (IsInvincible) return;
         StartCoroutine(InkRoutine());
+    }
+
+    private void FitInkToScreen()
+    {
+        if (inkCloud == null || inkCloud.sprite == null) return;
+        AspectRatioFitter fitter = inkCloud.GetComponent<AspectRatioFitter>();
+        if (fitter == null) fitter = inkCloud.gameObject.AddComponent<AspectRatioFitter>();
+        fitter.aspectMode = AspectRatioFitter.AspectMode.EnvelopeParent;
+        fitter.aspectRatio = inkCloud.sprite.rect.width / inkCloud.sprite.rect.height;
     }
 
     private IEnumerator InkRoutine()
@@ -871,6 +897,7 @@ public class GameManager : MonoBehaviour
         GameAudioManager.Play(GameSfx.GameOver);
         gameOver = true;
         gameStarted = false;
+        playerVisualEffects?.SetShieldActive(false);
         if (pauseButton != null) pauseButton.gameObject.SetActive(false);
         if (pearlChip != null) pearlChip.SetActive(false);
         if (tutorialObjectivePanel != null) tutorialObjectivePanel.SetActive(false);

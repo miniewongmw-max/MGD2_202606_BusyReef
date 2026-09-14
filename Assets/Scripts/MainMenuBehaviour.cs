@@ -20,6 +20,10 @@ public class MainMenuBehaviour : MonoBehaviour
     private StageCarousel3D carousel;
     private Button stagePrevious, stageNext;
     private readonly Image[] readyEquipmentIcons = new Image[5];
+    private readonly Vector2[] readySlotMin = new Vector2[5];
+    private readonly Vector2[] readySlotMax = new Vector2[5];
+    private readonly Vector2[] readySlotPosition = new Vector2[5];
+    private readonly Vector2[] readySlotSize = new Vector2[5];
     private Coroutine slideRoutine;
     private int currentPage = 2;
     private RectTransform navigationBar;
@@ -729,8 +733,8 @@ public class MainMenuBehaviour : MonoBehaviour
     private void AddSplitPageArtwork(RectTransform page, bool upperHalf)
     {
         RawImage artwork = OceanUI.CreateObject("Split Page Artwork", page).AddComponent<RawImage>();
-        artwork.texture = Resources.Load<Sprite>("UI/ModeShopBackground")?.texture;
-        artwork.uvRect = upperHalf ? new Rect(0f, .5f, 1f, .5f) : new Rect(0f, 0f, 1f, .5f);
+        artwork.texture = Resources.Load<Sprite>(upperHalf ? "UI/ModeShopBackground" : "UI/ShopLowerBackground")?.texture;
+        artwork.uvRect = upperHalf ? new Rect(0f, .5f, 1f, .5f) : new Rect(0f, 0f, 1f, 1f);
         artwork.raycastTarget = false;
         OceanUI.Stretch(artwork.rectTransform, 0f);
         artwork.transform.SetSiblingIndex(1);
@@ -895,6 +899,7 @@ public class MainMenuBehaviour : MonoBehaviour
         OceanUI.SetRect(backing.rectTransform, new Vector2(.17f, .31f), new Vector2(.83f, .41f), Vector2.zero, Vector2.zero);
         for (int i = 0; i < readyEquipmentIcons.Length; i++)
             readyEquipmentIcons[i] = CreateReadyEquipmentIcon(page, i);
+        RememberReadyEquipmentSlots();
     }
 
     private void EnsureReadyEquipmentIcons(Transform root)
@@ -906,6 +911,20 @@ public class MainMenuBehaviour : MonoBehaviour
             readyEquipmentIcons[i] = ComponentAt<Image>(playPage, iconName);
             if (readyEquipmentIcons[i] == null)
                 Debug.LogError("Editable Canvas is missing " + iconName + ". Re-bake the Gameplay Canvas.");
+        }
+        RememberReadyEquipmentSlots();
+    }
+
+    private void RememberReadyEquipmentSlots()
+    {
+        for (int i = 0; i < readyEquipmentIcons.Length; i++)
+        {
+            if (readyEquipmentIcons[i] == null) continue;
+            RectTransform rect = readyEquipmentIcons[i].rectTransform;
+            readySlotMin[i] = rect.anchorMin;
+            readySlotMax[i] = rect.anchorMax;
+            readySlotPosition[i] = rect.anchoredPosition;
+            readySlotSize[i] = rect.sizeDelta;
         }
     }
 
@@ -931,6 +950,7 @@ public class MainMenuBehaviour : MonoBehaviour
         Transform characterPage = FindDeepChild(hubCanvas != null ? hubCanvas.transform : null, "Character Selection Page");
         GameObject turtleModel = ComponentAt<UI3DModelPreview>(characterPage, "TURTLE")?.modelPrefab;
         GameObject sealModel = ComponentAt<UI3DModelPreview>(characterPage, "SEAL")?.modelPrefab;
+        int nextOccupiedSlot = 0;
         for (int i = 0; i < readyEquipmentIcons.Length; i++)
         {
             Image icon = readyEquipmentIcons[i];
@@ -938,6 +958,13 @@ public class MainMenuBehaviour : MonoBehaviour
             bool available = i == 0 || GameSession.PowerUpCount(i - 1) > 0;
             icon.gameObject.SetActive(available);
             if (!available) continue;
+            // Keep the author's slot positions and pack only the owned powers.
+            RectTransform rect = icon.rectTransform;
+            rect.anchorMin = readySlotMin[nextOccupiedSlot];
+            rect.anchorMax = readySlotMax[nextOccupiedSlot];
+            rect.anchoredPosition = readySlotPosition[nextOccupiedSlot];
+            rect.sizeDelta = readySlotSize[nextOccupiedSlot];
+            nextOccupiedSlot++;
             UI3DModelPreview modelPreview = icon.GetComponent<UI3DModelPreview>();
             if (i == 0 && modelPreview != null)
                 modelPreview.modelPrefab = GameSession.EquippedCharacter == 1 ? sealModel : turtleModel;

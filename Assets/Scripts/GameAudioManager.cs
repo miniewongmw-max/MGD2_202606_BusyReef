@@ -12,7 +12,8 @@ public enum GameSfx
     Pufferfish,
     Jellyfish,
     Squid,
-    Shark
+    Shark,
+    ProtectedHit
 }
 
 /// <summary>Assign clips on the Game Audio object in the Gameplay scene.</summary>
@@ -41,6 +42,8 @@ public class GameAudioManager : MonoBehaviour
     public AudioClip jellyfish;
     public AudioClip squid;
     public AudioClip shark;
+    [Tooltip("Played when Bubble Shield or Invincibility destroys an obstacle.")]
+    public AudioClip protectedHit;
 
     [Header("Audio Sources")]
     public AudioSource musicSource;
@@ -82,6 +85,7 @@ public class GameAudioManager : MonoBehaviour
         if (other.jellyfish != null) jellyfish = other.jellyfish;
         if (other.squid != null) squid = other.squid;
         if (other.shark != null) shark = other.shark;
+        if (other.protectedHit != null) protectedHit = other.protectedHit;
     }
 
     public static GameAudioManager EnsureInstance()
@@ -131,6 +135,7 @@ public class GameAudioManager : MonoBehaviour
             GameSfx.Jellyfish => manager.jellyfish,
             GameSfx.Squid => manager.squid,
             GameSfx.Shark => manager.shark,
+            GameSfx.ProtectedHit => manager.protectedHit,
             _ => null
         };
         if (clip != null && !Muted)
@@ -182,5 +187,6 @@ public class GameAudioManager : MonoBehaviour
         if (jellyfish == null) jellyfish = Resources.Load<AudioClip>("GameAudio/JellyfishDischarge");
         if (squid == null) squid = Resources.Load<AudioClip>("GameAudio/Squid");
         if (shark == null) shark = Resources.Load<AudioClip>("GameAudio/Shark");
+        if (protectedHit == null) protectedHit = Resources.Load<AudioClip>("GameAudio/ProtectedHit");
     }
 }

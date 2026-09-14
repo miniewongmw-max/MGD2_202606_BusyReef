@@ -74,6 +74,23 @@ public class SeaObstacle : MonoBehaviour
                 motion?.ReactTo(player.transform);
                 break;
         }
+        GameManager.Instance.NotifyObstacleEncountered(type);
+
+        if (GameManager.Instance.IsInvincible || GameManager.Instance.TryUseShield())
+        {
+            GameAudioManager.Play(GameSfx.ProtectedHit);
+            // Disable the whole obstacle immediately so a moving animal cannot
+            // apply a second hit before its destruction animation finishes.
+            foreach (Collider hitbox in GetComponentsInChildren<Collider>(true))
+                hitbox.enabled = false;
+            MovingSeaObstacle traffic = GetComponent<MovingSeaObstacle>();
+            if (traffic != null) traffic.enabled = false;
+            if (type == SeaObstacleType.Shark && GameSession.Mode == FishGameMode.Tutorial)
+                GameManager.Instance.NotifyTutorialInvincibleSharkHit();
+            Destroy(gameObject, 0.15f);
+            return false;
+        }
+
         GameAudioManager.Play(type switch
         {
             SeaObstacleType.Crab => GameSfx.Crab,
@@ -83,39 +100,12 @@ public class SeaObstacle : MonoBehaviour
             SeaObstacleType.Shark => GameSfx.Shark,
             _ => GameSfx.Obstacle
         });
-        GameManager.Instance.NotifyObstacleEncountered(type);
 
-        // Pufferfish is a permanent moving wall: it is never consumed and no
-        // protection power allows the player to move through its body.
+        // Without protection, pufferfish remain moving walls.
         if (type == SeaObstacleType.Pufferfish)
         {
             GameManager.Instance.ShowStatus("PUFFER BLOCK! WAIT OR CHOOSE ANOTHER LANE", 1.1f);
             return true;
-        }
-
-        if (GameManager.Instance.IsInvincible || GameManager.Instance.TryUseShield())
-        {
-            Collider[] colliders = GetComponentsInChildren<Collider>(true);
-            bool[] colliderStates = new bool[colliders.Length];
-            for (int i = 0; i < colliders.Length; i++)
-            {
-                colliderStates[i] = colliders[i].enabled;
-                colliders[i].enabled = false;
-            }
-
-            // Sharks are living traffic, so a protected collision lets the player
-            // pass but never removes the shark from its lane.
-            if (type == SeaObstacleType.Shark && GameSession.Mode == FishGameMode.Tutorial)
-            {
-                GameManager.Instance.NotifyTutorialInvincibleSharkHit();
-                gameObject.SetActive(false);
-                Destroy(gameObject);
-            }
-            else if (type == SeaObstacleType.Shark)
-                StartCoroutine(RestoreCollision(colliders, colliderStates, 0.75f));
-            else
-                Destroy(gameObject, 0.45f);
-            return false;
         }
 
         switch (type)
@@ -133,6 +123,7 @@ public class SeaObstacle : MonoBehaviour
                 return true;
             case SeaObstacleType.Jellyfish:
                 player.Stun(1.25f);
+                GameManager.Instance.ShowJellyfishZap();
                 GameManager.Instance.ShowStatus("ZAP! STUNNED", 1.25f);
                 if (GameSession.Mode == FishGameMode.Tutorial)
                     Destroy(gameObject, .35f);
@@ -217,13 +208,6 @@ public class SeaObstacle : MonoBehaviour
             1.25f * inverseY,
             worldFootprint * inverseZ);
         tileCollider.enabled = true;
-    }
-
-    private IEnumerator RestoreCollision(Collider[] colliders, bool[] colliderStates, float delay)
-    {
-        yield return new WaitForSeconds(delay);
-        for (int i = 0; i < colliders.Length; i++)
-            if (colliders[i] != null) colliders[i].enabled = colliderStates[i];
     }
 
     private void OnTriggerEnter(Collider other)
