@@ -2469,20 +2469,21 @@ MonoBehaviour:
     and sea creatures, environment and obstacle assets, UI artwork, lighting and
     materials, while assisting with level design, visual effects, HUD, settings UI,
     model previews, testing, and integration.\r\n\r\nTHIRD-PARTY ASSETS\r\n\r\n2D
-    & 3D Assets\r\n* Bubbles VFX \u2014 [Vefects / Unity Asset Store]\r\n* Nature
-    Objects & Props & Underwater Scene \u2014 [brunoody / Sketchfab]\n* PearlNacre
+    & 3D Assets, Audio\r\n* Bubbles VFX \u2014 [Vefects / Unity Asset Store]\r\n*
+    Nature Objects & Props & Underwater Scene \u2014 [brunoody / Sketchfab]\n* PearlNacre
     Texture \u2014  [Victoria Koltsova / Vecteezy]\n* Gray Water Surface \u2014 [tj_studio
-    / Magnific] \r\n* Creamy Chicken font \u2014 [MJType / DaFont]\r\n\r\nTOOLS &
-    ACKNOWLEDGEMENTS\r\n\r\nUnity \u2014 Game engine and game development\r\nVisual
-    Studio \u2014 C# programming\r\nMeshyAI \u2014 3D model generation\r\nBlender
-    \u2014 3D model creation and editing\r\nChatGPT \u2014 Image generation\r\nClip
-    Studio Paint \u2014 2D Image creation and editing\r\nGitHub \u2014 Version control
-    and team collaboration\r\n\r\nBusy Reef's gameplay and presentation were inspired
-    by Crossy Road, Animal Crossing, Subway Surfers, and Finding Nemo. Crossy Road
-    influenced the tile-based endless gameplay, Animal Crossing influenced the colourful
-    and friendly visual direction, Subway Surfers influenced the progression system,
-    and Finding Nemo inspired the theme of a young sea creature searching for its
-    family.\r\n\r\nVERSION\r\n\r\nVersion 1.0 \u2014 September 2026"
+    / Magnific] \r\n* Creamy Chicken font \u2014 [MJType / DaFont]\n* Audio \u2014
+    [Pixabay]\r\n\r\nTOOLS & ACKNOWLEDGEMENTS\r\n\r\nUnity \u2014 Game engine and
+    game development\r\nVisual Studio \u2014 C# programming\r\nMeshyAI \u2014 3D
+    model generation\r\nBlender \u2014 3D model creation and editing\r\nChatGPT \u2014
+    Image generation\r\nClip Studio Paint \u2014 2D Image creation and editing\r\nGitHub
+    \u2014 Version control and team collaboration\r\n\r\nBusy Reef's gameplay and
+    presentation were inspired by Crossy Road, Animal Crossing, Subway Surfers, and
+    Finding Nemo. Crossy Road influenced the tile-based endless gameplay, Animal
+    Crossing influenced the colourful and friendly visual direction, Subway Surfers
+    influenced the progression system, and Finding Nemo inspired the theme of a young
+    sea creature searching for its family.\r\n\r\nVERSION\r\n\r\nVersion 1.0 \u2014
+    September 2026"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: ba3ab56f15e5ced479c61bd1d97ce8be, type: 2}
   m_sharedMaterial: {fileID: 3035097212100031486, guid: ba3ab56f15e5ced479c61bd1d97ce8be, type: 2}
@@ -22572,7 +22573,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 3600}
+  m_SizeDelta: {x: 0, y: 3650}
   m_Pivot: {x: 0.5, y: 1}
 --- !u!1 &1852078507
 GameObject:
