@@ -58,6 +58,10 @@ public class GameManager : MonoBehaviour
     private TMP_Text resultText;
     private readonly Image[] gameplayPowerIcons = new Image[4];
     private readonly Image[] gameplayPowerTimers = new Image[4];
+    private readonly Vector2[] gameplayPowerSlotMin = new Vector2[4];
+    private readonly Vector2[] gameplayPowerSlotMax = new Vector2[4];
+    private readonly Vector2[] gameplayPowerSlotPosition = new Vector2[4];
+    private readonly Vector2[] gameplayPowerSlotSize = new Vector2[4];
     private float remainingTime = 60f;
     private int score;
     private bool paused;
@@ -208,7 +212,7 @@ public class GameManager : MonoBehaviour
         inkCloud.gameObject.SetActive(false);
 
         pauseOverlay = BuildModal(root, "CURRENT PAUSED", "Take a breath. Your turtle is safe here.", "RESUME", TogglePause);
-        AddModalSecondaryButton(pauseOverlay.transform, "BOTTOM MENU", GoToMenu);
+        AddModalSecondaryButton(pauseOverlay.transform, "MAIN MENU", GoToMenu);
         pauseOverlay.SetActive(false);
         gameOverOverlay = BuildResultOverlay(canvas);
         gameOverOverlay.SetActive(false);
@@ -359,7 +363,7 @@ public class GameManager : MonoBehaviour
         OceanUI.SetRect(resultText.rectTransform, new Vector2(0.08f, 0.35f), new Vector2(0.92f, 0.72f), Vector2.zero, Vector2.zero);
         Button retry = OceanUI.CreateButton("Retry", "RETRY", content, OceanUI.Sand, Restart);
         OceanUI.SetRect(retry.GetComponent<RectTransform>(), new Vector2(0.25f, 0.12f), new Vector2(0.75f, 0.22f), Vector2.zero, Vector2.zero);
-        Button hub = OceanUI.CreateButton("Hub", "BOTTOM MENU", content, OceanUI.Panel, GoToMenu);
+        Button hub = OceanUI.CreateButton("Hub", "MAIN MENU", content, OceanUI.Panel, GoToMenu);
         OceanUI.SetRect(hub.GetComponent<RectTransform>(), new Vector2(0.34f, 0.045f), new Vector2(0.66f, 0.105f), Vector2.zero, Vector2.zero);
         hub.GetComponentInChildren<TMP_Text>().fontSize = 24f;
         return overlay;
@@ -741,6 +745,7 @@ public class GameManager : MonoBehaviour
     }
 
     public void ShowJellyfishZap() => playerVisualEffects?.ShowZap();
+    public void ShowBlockedHitStars() => playerVisualEffects?.ShowBlockedHitStars();
 
     public bool TryConsumeSpeedDash()
     {
@@ -835,10 +840,22 @@ public class GameManager : MonoBehaviour
         // The top-right icon row replaces the old equipment word list.
         if (powerText != null) powerText.text = "";
         bool[] activePowers = { shieldReady, HasSpeedDash, HasPearlMagnet, IsInvincible };
+        int nextSlot = 0;
         for (int i = 0; i < gameplayPowerIcons.Length; i++)
         {
             Image icon = gameplayPowerIcons[i];
             if (icon == null) continue;
+            if (activePowers[i])
+            {
+                // Pack active powers into the first slots under the pearl HUD;
+                // unused or expired powers leave no visual gaps.
+                RectTransform rect = icon.rectTransform;
+                rect.anchorMin = gameplayPowerSlotMin[nextSlot];
+                rect.anchorMax = gameplayPowerSlotMax[nextSlot];
+                rect.anchoredPosition = gameplayPowerSlotPosition[nextSlot];
+                rect.sizeDelta = gameplayPowerSlotSize[nextSlot];
+                nextSlot++;
+            }
             bool has3DModel = icon.TryGetComponent(out UI3DModelPreview preview) && preview.modelPrefab != null;
             icon.sprite = has3DModel ? null : GetPowerEquipmentIcon(i);
             icon.color = has3DModel ? Color.clear : icon.sprite != null ? Color.white : EquipmentPlaceholderColor(i);
@@ -882,6 +899,7 @@ public class GameManager : MonoBehaviour
     {
         for (int i = 0; i < gameplayPowerIcons.Length; i++)
             gameplayPowerIcons[i] = CreateEquipmentIcon(root, "Equipped Power " + (i + 1), i);
+        RememberGameplayPowerSlots();
         EnsurePowerTimerImages();
     }
 
@@ -895,7 +913,21 @@ public class GameManager : MonoBehaviour
             else
                 gameplayPowerIcons[i].gameObject.SetActive(false);
         }
+        RememberGameplayPowerSlots();
         EnsurePowerTimerImages();
+    }
+
+    private void RememberGameplayPowerSlots()
+    {
+        for (int i = 0; i < gameplayPowerIcons.Length; i++)
+        {
+            if (gameplayPowerIcons[i] == null) continue;
+            RectTransform rect = gameplayPowerIcons[i].rectTransform;
+            gameplayPowerSlotMin[i] = rect.anchorMin;
+            gameplayPowerSlotMax[i] = rect.anchorMax;
+            gameplayPowerSlotPosition[i] = rect.anchoredPosition;
+            gameplayPowerSlotSize[i] = rect.sizeDelta;
+        }
     }
 
     private void EnsurePowerTimerImages()
@@ -935,8 +967,11 @@ public class GameManager : MonoBehaviour
     {
         Image icon = OceanUI.CreatePanel(iconName, root, EquipmentPlaceholderColor(index));
         icon.raycastTarget = false;
-        float top = .795f - index * .067f;
-        OceanUI.SetRect(icon.rectTransform, new Vector2(.905f, top - .058f), new Vector2(.978f, top), Vector2.zero, Vector2.zero);
+        int column = index % 3;
+        int row = index / 3;
+        float left = .035f + column * .098f;
+        float top = row == 0 ? .796f : .708f;
+        OceanUI.SetRect(icon.rectTransform, new Vector2(left, top - .072f), new Vector2(left + .088f, top), Vector2.zero, Vector2.zero);
         icon.preserveAspect = true;
         return icon;
     }

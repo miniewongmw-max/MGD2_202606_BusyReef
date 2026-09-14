@@ -113,7 +113,7 @@ public class MainMenuBehaviour : MonoBehaviour
         hubCanvas = FindSceneCanvas("Busy Reef Bottom Hub");
         if (hubCanvas == null)
         {
-            Debug.LogError("Editable bottom-menu Canvas is missing. Run Tools/Busy Reef/Bake Editable Gameplay Canvas.");
+            Debug.LogError("Editable main-menu Canvas is missing. Run Tools/Busy Reef/Bake Editable Gameplay Canvas.");
             return;
         }
 
@@ -204,8 +204,16 @@ public class MainMenuBehaviour : MonoBehaviour
                 OceanUI.SetRect(resetButton.GetComponent<RectTransform>(), new Vector2(.53f, .07f), new Vector2(.79f, .17f), Vector2.zero, Vector2.zero);
             }
         }
-        if (resetButton != null && resetButton.GetComponentInChildren<TMP_Text>(true) == null)
-            OceanUI.CreateText("RESET", resetButton.transform, 40f, OceanUI.Deep);
+        if (resetButton != null)
+        {
+            TMP_Text resetLabel = resetButton.GetComponentInChildren<TMP_Text>(true);
+            if (resetLabel == null) resetLabel = OceanUI.CreateText("RESET", resetButton.transform, 40f, OceanUI.Deep);
+            resetLabel.text = "RESET";
+            resetLabel.fontSize = 40f;
+            resetLabel.alignment = TextAlignmentOptions.Center;
+            resetLabel.color = OceanUI.Deep;
+            resetLabel.raycastTarget = false;
+        }
         WireButton(resetButton, ConfirmResetProgress);
         WireButton(ComponentAt<Button>(aboutPanel != null ? aboutPanel.transform : null, "ABOUT Close"), () => SetAboutVisible(false));
         WireSlider(bgmSlider, value => { GameAudioManager.SetBgmVolume(value); RefreshAll(); });
@@ -868,9 +876,7 @@ public class MainMenuBehaviour : MonoBehaviour
         for (int i = 0; i < navTiles.Count; i++)
         {
             Color tileColor = i % 3 == 0 ? OceanUI.Coral : i % 3 == 1 ? OceanUI.Sand : OceanUI.Aqua;
-            Color glassTile = i == currentPage ? Color.Lerp(tileColor, Color.white, 0.38f) : tileColor;
-            glassTile.a = .52f;
-            navTiles[i].color = glassTile;
+            navTiles[i].color = i == currentPage ? Color.Lerp(tileColor, Color.white, 0.38f) : tileColor;
         }
         if (stageTitle != null)
         {

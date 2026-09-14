@@ -178,6 +178,12 @@ public static class OceanUI
     private static void StyleBubbleButton(Button button)
     {
         if (button == null || !button.TryGetComponent(out Image image)) return;
+        if (IsInside(button.transform, "Five Button Navigation") ||
+            IsInside(button.transform, "Mode Selection Page"))
+        {
+            RemoveBubbleStyle(button, image);
+            return;
+        }
         // The transparent pause glyph is intentionally an unframed control.
         if (image.color.a <= .02f) return;
         MakeRoundedIfDefault(image);
@@ -217,6 +223,34 @@ public static class OceanUI
             rect.offsetMax = Vector2.zero;
         }
         gloss.transform.SetAsFirstSibling();
+    }
+
+    private static bool IsInside(Transform child, string ancestorName)
+    {
+        for (Transform current = child.parent; current != null; current = current.parent)
+            if (current.name == ancestorName) return true;
+        return false;
+    }
+
+    private static void RemoveBubbleStyle(Button button, Image image)
+    {
+        Transform gloss = button.transform.Find("Bubble Gloss");
+        if (gloss == null) return;
+        if (Application.isPlaying) UnityEngine.Object.Destroy(gloss.gameObject);
+        else UnityEngine.Object.DestroyImmediate(gloss.gameObject);
+        foreach (Shadow effect in button.GetComponents<Shadow>())
+        {
+            bool bubbleRim = effect is Outline &&
+                Vector2.Distance(effect.effectDistance, new Vector2(2f, -2f)) < .01f;
+            bool bubbleDepth = !(effect is Outline) &&
+                Vector2.Distance(effect.effectDistance, new Vector2(0f, -4f)) < .01f;
+            if (!bubbleRim && !bubbleDepth) continue;
+            if (Application.isPlaying) UnityEngine.Object.Destroy(effect);
+            else UnityEngine.Object.DestroyImmediate(effect);
+        }
+        Color original = image.color;
+        original.a = 1f;
+        image.color = original;
     }
 
     public static void SetRect(RectTransform rect, Vector2 anchorMin, Vector2 anchorMax,

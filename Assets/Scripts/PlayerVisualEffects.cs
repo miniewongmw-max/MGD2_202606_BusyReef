@@ -9,6 +9,10 @@ public sealed class PlayerVisualEffects : MonoBehaviour
     private GameObject shield;
     private readonly SpriteRenderer[] bolts = new SpriteRenderer[3];
     private readonly SpriteRenderer[] rainbowAura = new SpriteRenderer[3];
+    private readonly SpriteRenderer[] hitStars = new SpriteRenderer[5];
+    private SpriteRenderer hitStarRing;
+    private static Sprite hitStarSprite;
+    private float hitStarRemaining;
     private bool invincibleVisible;
     private float zapRemaining;
     private float breakRemaining;
@@ -69,6 +73,29 @@ public sealed class PlayerVisualEffects : MonoBehaviour
         PlaceBolts();
     }
 
+    public void ShowBlockedHitStars()
+    {
+        if (target == null) return;
+        hitStarRemaining = .78f;
+        if (hitStarRing == null)
+        {
+            GameObject orbit = new GameObject("Blocked Hit Faint Ring");
+            hitStarRing = orbit.AddComponent<SpriteRenderer>();
+            hitStarRing.sprite = PowerTimerSprite.Get();
+            hitStarRing.sortingOrder = 54;
+        }
+        if (hitStarSprite == null) hitStarSprite = CreateHitStarSprite();
+        for (int i = 0; i < hitStars.Length; i++)
+        {
+            if (hitStars[i] != null) continue;
+            GameObject star = new GameObject($"Blocked Hit Star {i + 1}");
+            hitStars[i] = star.AddComponent<SpriteRenderer>();
+            hitStars[i].sprite = hitStarSprite;
+            hitStars[i].sortingOrder = 55;
+        }
+        PlaceHitStars(BodyBounds());
+    }
+
     public void SetInvincible(bool active)
     {
         if (active == invincibleVisible) return;
@@ -108,6 +135,21 @@ public sealed class PlayerVisualEffects : MonoBehaviour
                 {
                     Destroy(shield);
                     shield = null;
+                }
+            }
+        }
+        if (hitStarRemaining > 0f)
+        {
+            hitStarRemaining -= Time.deltaTime;
+            if (hitStarRemaining > 0f) PlaceHitStars(body);
+            else
+            {
+                if (hitStarRing != null) Destroy(hitStarRing.gameObject);
+                hitStarRing = null;
+                for (int i = 0; i < hitStars.Length; i++)
+                {
+                    if (hitStars[i] != null) Destroy(hitStars[i].gameObject);
+                    hitStars[i] = null;
                 }
             }
         }
@@ -165,6 +207,69 @@ public sealed class PlayerVisualEffects : MonoBehaviour
         }
     }
 
+    private void PlaceHitStars(Bounds body)
+    {
+        Camera view = Camera.main;
+        if (view == null) return;
+        float fade = Mathf.Clamp01(hitStarRemaining / .45f);
+        Vector3 center = body.center + view.transform.up * .23f - view.transform.forward * .24f;
+        Quaternion facing = Quaternion.LookRotation(-view.transform.forward, view.transform.up);
+        if (hitStarRing != null)
+        {
+            hitStarRing.transform.position = center;
+            hitStarRing.transform.rotation = facing * Quaternion.Euler(0f, 0f, Time.time * 100f);
+            hitStarRing.transform.localScale = Vector3.one * .72f;
+            hitStarRing.color = new Color(1f, 1f, .9f, .27f * fade);
+        }
+        for (int i = 0; i < hitStars.Length; i++)
+        {
+            SpriteRenderer star = hitStars[i];
+            if (star == null) continue;
+            float angle = Time.time * 6.5f + i * Mathf.PI * 2f / hitStars.Length;
+            star.transform.position = center + view.transform.right * (Mathf.Cos(angle) * .35f) +
+                view.transform.up * (Mathf.Sin(angle) * .15f);
+            star.transform.rotation = facing * Quaternion.Euler(0f, 0f, angle * Mathf.Rad2Deg);
+            star.transform.localScale = Vector3.one * (.13f + (i % 2) * .045f);
+            star.color = new Color(1f, .88f, .38f, (.4f + .13f * Mathf.Sin(angle * 2f)) * fade);
+        }
+    }
+
+    private static Sprite CreateHitStarSprite()
+    {
+        const int size = 48;
+        Texture2D texture = new Texture2D(size, size, TextureFormat.RGBA32, false);
+        texture.name = "Blocked Hit Star Texture";
+        texture.hideFlags = HideFlags.DontSave;
+        texture.filterMode = FilterMode.Bilinear;
+        Color[] pixels = new Color[size * size];
+        Vector2[] points = new Vector2[10];
+        for (int i = 0; i < points.Length; i++)
+        {
+            float angle = Mathf.PI * .5f + i * Mathf.PI / 5f;
+            float radius = i % 2 == 0 ? 21f : 8.5f;
+            points[i] = new Vector2(24f + Mathf.Cos(angle) * radius, 24f + Mathf.Sin(angle) * radius);
+        }
+        for (int y = 0; y < size; y++)
+        for (int x = 0; x < size; x++)
+        {
+            bool inside = false;
+            Vector2 sample = new Vector2(x + .5f, y + .5f);
+            for (int i = 0, j = points.Length - 1; i < points.Length; j = i++)
+            {
+                if ((points[i].y > sample.y) != (points[j].y > sample.y) &&
+                    sample.x < (points[j].x - points[i].x) * (sample.y - points[i].y) /
+                    (points[j].y - points[i].y) + points[i].x) inside = !inside;
+            }
+            pixels[y * size + x] = inside ? Color.white : Color.clear;
+        }
+        texture.SetPixels(pixels);
+        texture.Apply(false, true);
+        Sprite sprite = Sprite.Create(texture, new Rect(0f, 0f, size, size), new Vector2(.5f, .5f), size);
+        sprite.name = "Blocked Hit Star";
+        sprite.hideFlags = HideFlags.DontSave;
+        return sprite;
+    }
+
     private Bounds BodyBounds()
     {
         Bounds bounds = new Bounds(target.position + Vector3.up * 0.45f, Vector3.one * 0.65f);
@@ -185,5 +290,8 @@ public sealed class PlayerVisualEffects : MonoBehaviour
             if (bolt != null) Destroy(bolt.gameObject);
         foreach (SpriteRenderer halo in rainbowAura)
             if (halo != null) Destroy(halo.gameObject);
+        if (hitStarRing != null) Destroy(hitStarRing.gameObject);
+        foreach (SpriteRenderer star in hitStars)
+            if (star != null) Destroy(star.gameObject);
     }
 }

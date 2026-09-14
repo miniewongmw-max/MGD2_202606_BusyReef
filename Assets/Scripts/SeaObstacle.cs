@@ -104,6 +104,7 @@ public class SeaObstacle : MonoBehaviour
         // Without protection, pufferfish remain moving walls.
         if (type == SeaObstacleType.Pufferfish)
         {
+            GameManager.Instance.ShowBlockedHitStars();
             GameManager.Instance.ShowStatus("PUFFER BLOCK! WAIT OR CHOOSE ANOTHER LANE", 1.1f);
             return true;
         }
@@ -111,6 +112,7 @@ public class SeaObstacle : MonoBehaviour
         switch (type)
         {
             case SeaObstacleType.Coral:
+                GameManager.Instance.ShowBlockedHitStars();
                 GameManager.Instance.ShowStatus("CORAL BLOCK! CHOOSE ANOTHER LANE", 1f);
                 return true;
             case SeaObstacleType.Squid:
