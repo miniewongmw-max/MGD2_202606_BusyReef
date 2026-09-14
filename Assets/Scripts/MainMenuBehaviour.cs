@@ -32,6 +32,9 @@ public class MainMenuBehaviour : MonoBehaviour
     private RectTransform navigationBleed;
     private Image fullPageBackdrop;
     private RawImage splitPageBackdrop;
+    private RawImage incomingPageBackdrop;
+    private bool backdropAnimating;
+    private const float PageSlideDuration = .36f;
     private bool lastLandscape;
     private int slideFromPage = 2;
     private bool built;
@@ -154,6 +157,7 @@ public class MainMenuBehaviour : MonoBehaviour
         AddPage(root, "Play Page");
         AddPage(root, "Character Selection Page");
         AddPage(root, "Settings Page");
+        MakePageArtworkTransparent();
 
         navTiles.Clear();
         string[] labels = { "MODE", "SHOP", "PLAY", "CHARACTER", "SETTINGS" };
@@ -355,10 +359,15 @@ public class MainMenuBehaviour : MonoBehaviour
         }
         bool landscape = Screen.width > Screen.height;
         if (landscape == lastLandscape) return;
+        if (slideRoutine != null) StopCoroutine(slideRoutine);
+        slideRoutine = null;
+        backdropAnimating = false;
         lastLandscape = landscape;
         ApplyHubOrientation();
         Canvas.ForceUpdateCanvases();
         PositionPages();
+        SetRestingPageVisibility();
+        SetBackdropInstant(currentPage);
     }
 
     private RectTransform Page(string name)
@@ -396,7 +405,7 @@ public class MainMenuBehaviour : MonoBehaviour
     {
         RectTransform page = Page("Mode Selection Page");
         AddOpaquePageBackground(page, new Color32(3, 45, 66, 255));
-        AddSplitPageArtwork(page, true);
+        AddSplitPageArtwork(page, "UI/SharedModeShop", true);
         AddTitle(page, "MODE SELECTION", "Swipe the circular carousel and tap a mode");
         GameObject holder = OceanUI.CreateObject("3D Circular Mode Carousel", page);
         OceanUI.SetRect(holder.GetComponent<RectTransform>(), new Vector2(.06f, .30f), new Vector2(.94f, .77f), Vector2.zero, Vector2.zero);
@@ -440,7 +449,7 @@ public class MainMenuBehaviour : MonoBehaviour
     {
         RectTransform page = Page("Shop Page");
         AddOpaquePageBackground(page, new Color32(3, 45, 66, 255));
-        AddSplitPageArtwork(page, false);
+        AddSplitPageArtwork(page, "UI/SharedModeShop", false);
         AddTitle(page, "PEARL SHOP", "Power-ups and characters have separate categories");
         Button powers = OceanUI.CreateButton("Power Category", "POWER-UPS", page, OceanUI.Aqua, () => ShopCategory(true));
         Button chars = OceanUI.CreateButton("Character Category", "CHARACTERS", page, OceanUI.Sand, () => ShopCategory(false));
@@ -489,6 +498,7 @@ public class MainMenuBehaviour : MonoBehaviour
     {
         RectTransform page = Page("Character Selection Page");
         AddOpaquePageBackground(page, new Color32(4, 52, 72, 255));
+        AddSplitPageArtwork(page, "UI/SharedCharacterSettings", true);
         AddTitle(page, "CHARACTERS", "Select who crosses the Busy Reef");
         CharacterCard(page, "TURTLE", "DEFAULT", 0, .07f, OceanUI.Aqua);
         CharacterCard(page, "SEAL", $"{SealCost} PEARLS", 1, .52f, OceanUI.Sand);
@@ -515,6 +525,7 @@ public class MainMenuBehaviour : MonoBehaviour
     {
         RectTransform page = Page("Settings Page");
         AddOpaquePageBackground(page, new Color32(3, 39, 61, 255));
+        AddSplitPageArtwork(page, "UI/SharedCharacterSettings", false);
         AddTitle(page, "SETTINGS", "Audio and controls are saved automatically");
         Button sound = Setting(page, "SOUND", "", .66f, () => { GameAudioManager.ToggleMute(); RefreshAll(); });
         soundLabel = sound.GetComponentInChildren<TMP_Text>();
@@ -667,6 +678,8 @@ public class MainMenuBehaviour : MonoBehaviour
         currentPage = index;
         for (int i = 0; i < pages.Count; i++) pages[i].gameObject.SetActive(i == slideFromPage || i == currentPage);
         if (slideRoutine != null) StopCoroutine(slideRoutine);
+        slideRoutine = null;
+        backdropAnimating = true;
         slideRoutine = StartCoroutine(Slide());
         RefreshAll();
     }
@@ -677,19 +690,23 @@ public class MainMenuBehaviour : MonoBehaviour
         float distance = Mathf.Max(1f, landscape ? pageArea.rect.height : pageArea.rect.width), elapsed = 0f;
         Vector2[] start = new Vector2[pages.Count];
         for (int i = 0; i < pages.Count; i++) start[i] = pages[i].anchoredPosition;
-        while (elapsed < .26f)
+        int backdropTransition = BeginBackdropSlide(currentPage, out Rect startUv, out Rect targetUv, out float startAlpha);
+        while (elapsed < PageSlideDuration)
         {
             elapsed += Time.unscaledDeltaTime;
-            float t = 1f - Mathf.Pow(1f - Mathf.Clamp01(elapsed / .26f), 3f);
+            float t = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(elapsed / PageSlideDuration));
             for (int i = 0; i < pages.Count; i++)
             {
                 Vector2 target = landscape ? new Vector2(0f, (currentPage - i) * distance) : new Vector2((i - currentPage) * distance, 0f);
                 pages[i].anchoredPosition = Vector2.Lerp(start[i], target, t);
             }
+            AnimateBackdropSlide(backdropTransition, startUv, targetUv, startAlpha, t);
             yield return null;
         }
         PositionPages();
         SetRestingPageVisibility();
+        SetBackdropInstant(currentPage);
+        backdropAnimating = false;
         slideRoutine = null;
     }
 
@@ -704,6 +721,132 @@ public class MainMenuBehaviour : MonoBehaviour
     private void SetRestingPageVisibility()
     {
         for (int i = 0; i < pages.Count; i++) pages[i].gameObject.SetActive(i == currentPage);
+    }
+
+    private void MakePageArtworkTransparent()
+    {
+        foreach (RectTransform page in pages)
+        {
+            if (page == null) continue;
+            Image background = ComponentAt<Image>(page, "Opaque Page Background");
+            if (background != null) background.color = Color.clear;
+            RawImage artwork = ComponentAt<RawImage>(page, "Split Page Artwork");
+            if (artwork != null) artwork.color = Color.clear;
+        }
+    }
+
+    private Texture ArtworkForPage(int page)
+    {
+        if (page == 2 || page < 0 || page >= pages.Count) return null;
+        RawImage artwork = ComponentAt<RawImage>(pages[page], "Split Page Artwork");
+        if (artwork != null && artwork.texture != null) return artwork.texture;
+        Image background = ComponentAt<Image>(pages[page], "Opaque Page Background");
+        if (background != null && background.sprite != null) return background.sprite.texture;
+        string path = page < 2 ? "UI/SharedModeShop" : "UI/SharedCharacterSettings";
+        return Resources.Load<Sprite>(path)?.texture;
+    }
+
+    private Rect ArtworkWindow(int page, Texture texture)
+    {
+        float width = fullPageBackdrop != null ? fullPageBackdrop.rectTransform.rect.width : Screen.width;
+        float height = fullPageBackdrop != null ? fullPageBackdrop.rectTransform.rect.height : Screen.height;
+        float aspect = Mathf.Max(.1f, width / Mathf.Max(1f, height));
+        // Sample the requested half without stretching the artwork on tall phones.
+        float uvWidth = Mathf.Min(1f, aspect * .5f * texture.height / Mathf.Max(1f, texture.width));
+        return new Rect((1f - uvWidth) * .5f, page == 0 || page == 3 ? .5f : 0f, uvWidth, .5f);
+    }
+
+    private void EnsureIncomingBackdrop()
+    {
+        if (incomingPageBackdrop != null || fullPageBackdrop == null) return;
+        incomingPageBackdrop = OceanUI.CreateObject("Incoming Page Backdrop", fullPageBackdrop.transform).AddComponent<RawImage>();
+        incomingPageBackdrop.raycastTarget = false;
+        OceanUI.Stretch(incomingPageBackdrop.rectTransform, 0f);
+        incomingPageBackdrop.gameObject.SetActive(false);
+    }
+
+    private void SetBackdropInstant(int page)
+    {
+        if (fullPageBackdrop == null || splitPageBackdrop == null) return;
+        EnsureIncomingBackdrop();
+        if (incomingPageBackdrop != null) incomingPageBackdrop.gameObject.SetActive(false);
+        Texture texture = ArtworkForPage(page);
+        fullPageBackdrop.gameObject.SetActive(page != 2);
+        fullPageBackdrop.sprite = null;
+        fullPageBackdrop.color = texture != null ? Color.clear : OceanUI.Aqua;
+        splitPageBackdrop.gameObject.SetActive(texture != null);
+        if (texture == null) return;
+        splitPageBackdrop.texture = texture;
+        splitPageBackdrop.uvRect = ArtworkWindow(page, texture);
+        splitPageBackdrop.color = Color.white;
+    }
+
+    // 1 = fade from gameplay, 2 = fade to gameplay, 3 = pan one image,
+    // 4 = crossfade between the two separate illustrated backgrounds.
+    private int BeginBackdropSlide(int targetPage, out Rect startUv, out Rect targetUv, out float startAlpha)
+    {
+        startUv = targetUv = new Rect(0f, 0f, 1f, 1f);
+        startAlpha = 0f;
+        if (fullPageBackdrop == null || splitPageBackdrop == null) return 0;
+        EnsureIncomingBackdrop();
+        if (incomingPageBackdrop != null && incomingPageBackdrop.gameObject.activeSelf)
+        {
+            if (incomingPageBackdrop.color.a > splitPageBackdrop.color.a)
+            {
+                splitPageBackdrop.texture = incomingPageBackdrop.texture;
+                splitPageBackdrop.uvRect = incomingPageBackdrop.uvRect;
+                splitPageBackdrop.color = incomingPageBackdrop.color;
+            }
+            incomingPageBackdrop.gameObject.SetActive(false);
+        }
+        Texture targetTexture = ArtworkForPage(targetPage);
+        bool sourceVisible = fullPageBackdrop.gameObject.activeSelf &&
+            splitPageBackdrop.gameObject.activeSelf && splitPageBackdrop.texture != null;
+        startAlpha = sourceVisible ? splitPageBackdrop.color.a : 0f;
+        startUv = splitPageBackdrop.uvRect;
+        fullPageBackdrop.color = Color.clear;
+        if (targetTexture == null)
+            return sourceVisible ? 2 : 0;
+        targetUv = ArtworkWindow(targetPage, targetTexture);
+        fullPageBackdrop.gameObject.SetActive(true);
+        splitPageBackdrop.gameObject.SetActive(true);
+        if (!sourceVisible)
+        {
+            splitPageBackdrop.texture = targetTexture;
+            splitPageBackdrop.uvRect = targetUv;
+            splitPageBackdrop.color = new Color(1f, 1f, 1f, 0f);
+            return 1;
+        }
+        if (splitPageBackdrop.texture == targetTexture) return 3;
+        incomingPageBackdrop.texture = targetTexture;
+        incomingPageBackdrop.uvRect = targetUv;
+        incomingPageBackdrop.color = new Color(1f, 1f, 1f, 0f);
+        incomingPageBackdrop.gameObject.SetActive(true);
+        return 4;
+    }
+
+    private void AnimateBackdropSlide(int kind, Rect startUv, Rect targetUv, float startAlpha, float t)
+    {
+        if (splitPageBackdrop == null) return;
+        switch (kind)
+        {
+            case 1:
+                splitPageBackdrop.color = new Color(1f, 1f, 1f, t);
+                break;
+            case 2:
+                splitPageBackdrop.color = new Color(1f, 1f, 1f, startAlpha * (1f - t));
+                break;
+            case 3:
+                splitPageBackdrop.uvRect = new Rect(
+                    Mathf.Lerp(startUv.x, targetUv.x, t), Mathf.Lerp(startUv.y, targetUv.y, t),
+                    Mathf.Lerp(startUv.width, targetUv.width, t), Mathf.Lerp(startUv.height, targetUv.height, t));
+                splitPageBackdrop.color = new Color(1f, 1f, 1f, Mathf.Lerp(startAlpha, 1f, t));
+                break;
+            case 4:
+                if (incomingPageBackdrop != null)
+                    incomingPageBackdrop.color = new Color(1f, 1f, 1f, t);
+                break;
+        }
     }
 
     private void ApplyHubOrientation()
@@ -764,11 +907,12 @@ public class MainMenuBehaviour : MonoBehaviour
         background.transform.SetAsFirstSibling();
     }
 
-    private void AddSplitPageArtwork(RectTransform page, bool upperHalf)
+    private void AddSplitPageArtwork(RectTransform page, string resourcePath, bool upperHalf)
     {
         RawImage artwork = OceanUI.CreateObject("Split Page Artwork", page).AddComponent<RawImage>();
-        artwork.texture = Resources.Load<Sprite>(upperHalf ? "UI/ModeShopBackground" : "UI/ShopLowerBackground")?.texture;
-        artwork.uvRect = upperHalf ? new Rect(0f, .5f, 1f, .5f) : new Rect(0f, 0f, 1f, 1f);
+        artwork.texture = Resources.Load<Sprite>(resourcePath)?.texture;
+        artwork.uvRect = upperHalf ? new Rect(0f, .5f, 1f, .5f) : new Rect(0f, 0f, 1f, .5f);
+        artwork.color = Color.clear;
         artwork.raycastTarget = false;
         OceanUI.Stretch(artwork.rectTransform, 0f);
         artwork.transform.SetSiblingIndex(1);
@@ -834,34 +978,7 @@ public class MainMenuBehaviour : MonoBehaviour
 
     private void RefreshAll()
     {
-        if (fullPageBackdrop != null)
-        {
-            bool opaquePage = currentPage == 0 || currentPage == 1 || currentPage == 3 || currentPage == 4;
-            fullPageBackdrop.gameObject.SetActive(opaquePage);
-            Image pageArtwork = opaquePage && currentPage < pages.Count
-                ? FindDeepChild(pages[currentPage], "Opaque Page Background")?.GetComponent<Image>()
-                : null;
-            RawImage splitArtwork = opaquePage && currentPage < pages.Count
-                ? FindDeepChild(pages[currentPage], "Split Page Artwork")?.GetComponent<RawImage>()
-                : null;
-            bool hasSplitArtwork = splitArtwork != null && splitArtwork.texture != null;
-            if (splitPageBackdrop != null)
-            {
-                splitPageBackdrop.gameObject.SetActive(hasSplitArtwork);
-                if (hasSplitArtwork)
-                {
-                    splitPageBackdrop.texture = splitArtwork.texture;
-                    splitPageBackdrop.uvRect = splitArtwork.uvRect;
-                }
-            }
-            bool hasArtwork = pageArtwork != null && pageArtwork.sprite != null && pageArtwork.color.a > .5f;
-            fullPageBackdrop.sprite = !hasSplitArtwork && hasArtwork ? pageArtwork.sprite : null;
-            fullPageBackdrop.type = Image.Type.Simple;
-            fullPageBackdrop.color = hasSplitArtwork ? Color.clear : hasArtwork ? Color.white :
-                currentPage == 0 ? new Color32(155, 220, 240, 255) :
-                currentPage == 1 ? new Color32(174, 226, 242, 255) :
-                currentPage == 3 ? new Color32(255, 169, 199, 255) : new Color32(171, 226, 242, 255);
-        }
+        if (!backdropAnimating) SetBackdropInstant(currentPage);
         RefreshWallet();
         if (homeText != null) homeText.text = $"{DisplayModeName(GameSession.Mode)} MODE\n{GameSession.EquippedCharacterName.ToUpperInvariant()} SELECTED";
         if (touchLabel != null) touchLabel.text = GameSession.ShowTouchControls ? "ON" : "OFF";

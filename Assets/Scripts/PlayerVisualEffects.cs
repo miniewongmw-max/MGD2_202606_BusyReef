@@ -49,7 +49,7 @@ public sealed class PlayerVisualEffects : MonoBehaviour
         // The source sphere mesh has a unit diameter. Scale to the visible
         // character, with limits so imported model bounds cannot swallow a lane.
         Bounds body = BodyBounds();
-        shieldDiameter = Mathf.Clamp(Mathf.Max(body.size.x, body.size.y, body.size.z) * 1.05f, 0.65f, 1.15f);
+        shieldDiameter = Mathf.Clamp(Mathf.Max(body.size.x, body.size.y, body.size.z) * .85f, .52f, .95f);
         shield.transform.localScale = Vector3.one * shieldDiameter;
         shield.transform.position = ShieldCenter(body);
         // The imported bubble material has strong emission/opacity. Keep its

@@ -79,7 +79,7 @@ public class MapManager : MonoBehaviour
     [Tooltip("Visible bottom height used for pearls. Other power-up collectibles keep using Collectible Height.")]
     public float pearlHeight = 0.13f;
     [Tooltip("Additional visible-bottom offset for Bubble Shield pickups. Negative values lower the sphere without moving its pickup trigger.")]
-    public float bubbleShieldHeightOffset = -0.12f;
+    public float bubbleShieldHeightOffset = -0.30f;
     [Tooltip("Each value is the requested visible-bottom position, so long tentacles/legs are included when grounding the model.")]
     public float coralGroundHeight = 0.05f;
     public float jellyfishGroundHeight = 0.20f;
