@@ -175,10 +175,10 @@ public class UI3DModelPreview : MonoBehaviour
         GameObject lightObject = new GameObject("Preview Light") { hideFlags = HideFlags.HideAndDontSave };
         lightObject.transform.SetParent(previewRoot.transform, false);
         lightObject.transform.localRotation = Quaternion.Euler(35f, -35f, 0f);
-        Light light = lightObject.AddComponent<Light>();
-        light.type = LightType.Directional;
-        light.intensity = 1.35f;
-        light.cullingMask = 1 << 31;
+        //Light light = lightObject.AddComponent<Light>();
+        //light.type = LightType.Directional;
+        //light.intensity = 1.35f;
+        //light.cullingMask = 1 << 31;
         previewRoot.SetActive(true);
         PrepareParticlePreview();
         FitModelToCamera();
