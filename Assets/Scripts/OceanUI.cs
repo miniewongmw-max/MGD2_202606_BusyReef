@@ -164,7 +164,59 @@ public static class OceanUI
         TMP_FontAsset font = CreamyFont();
         if (font != null) buttonLabel.font = font;
         Stretch(buttonLabel.rectTransform, 12f);
+        StyleBubbleButton(button);
         return button;
+    }
+
+    public static void StyleCanvasButtons(Canvas canvas)
+    {
+        if (canvas == null) return;
+        foreach (Button button in canvas.GetComponentsInChildren<Button>(true))
+            StyleBubbleButton(button);
+    }
+
+    private static void StyleBubbleButton(Button button)
+    {
+        if (button == null || !button.TryGetComponent(out Image image)) return;
+        // The transparent pause glyph is intentionally an unframed control.
+        if (image.color.a <= .02f) return;
+        MakeRoundedIfDefault(image);
+        Color glass = image.color;
+        glass.a = Mathf.Min(glass.a, .52f);
+        image.color = glass;
+
+        Outline rim = button.GetComponent<Outline>();
+        if (rim == null) rim = button.gameObject.AddComponent<Outline>();
+        rim.effectColor = new Color(1f, 1f, 1f, .7f);
+        rim.effectDistance = new Vector2(2f, -2f);
+        rim.useGraphicAlpha = false;
+
+        Shadow depth = null;
+        foreach (Shadow candidate in button.GetComponents<Shadow>())
+            if (!(candidate is Outline)) { depth = candidate; break; }
+        if (depth == null) depth = button.gameObject.AddComponent<Shadow>();
+        depth.effectColor = new Color(.02f, .17f, .32f, .23f);
+        depth.effectDistance = new Vector2(0f, -4f);
+        depth.useGraphicAlpha = false;
+
+        Transform existing = button.transform.Find("Bubble Gloss");
+        Image gloss = existing != null ? existing.GetComponent<Image>() : null;
+        if (gloss == null)
+        {
+            GameObject highlight = new GameObject("Bubble Gloss", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
+            highlight.transform.SetParent(button.transform, false);
+            gloss = highlight.GetComponent<Image>();
+            gloss.sprite = RoundedSprite();
+            gloss.type = Image.Type.Sliced;
+            gloss.color = new Color(1f, 1f, 1f, .24f);
+            gloss.raycastTarget = false;
+            RectTransform rect = gloss.rectTransform;
+            rect.anchorMin = new Vector2(.08f, .57f);
+            rect.anchorMax = new Vector2(.92f, .91f);
+            rect.offsetMin = Vector2.zero;
+            rect.offsetMax = Vector2.zero;
+        }
+        gloss.transform.SetAsFirstSibling();
     }
 
     public static void SetRect(RectTransform rect, Vector2 anchorMin, Vector2 anchorMax,

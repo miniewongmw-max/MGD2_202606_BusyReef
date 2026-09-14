@@ -8,6 +8,8 @@ public sealed class PlayerVisualEffects : MonoBehaviour
     private Sprite zapSprite;
     private GameObject shield;
     private readonly SpriteRenderer[] bolts = new SpriteRenderer[3];
+    private readonly SpriteRenderer[] rainbowAura = new SpriteRenderer[3];
+    private bool invincibleVisible;
     private float zapRemaining;
     private float breakRemaining;
     private float shieldDiameter;
@@ -67,10 +69,33 @@ public sealed class PlayerVisualEffects : MonoBehaviour
         PlaceBolts();
     }
 
+    public void SetInvincible(bool active)
+    {
+        if (active == invincibleVisible) return;
+        invincibleVisible = active;
+        if (!active)
+        {
+            for (int i = 0; i < rainbowAura.Length; i++)
+            {
+                if (rainbowAura[i] != null) Destroy(rainbowAura[i].gameObject);
+                rainbowAura[i] = null;
+            }
+            return;
+        }
+        for (int i = 0; i < rainbowAura.Length; i++)
+        {
+            GameObject halo = new GameObject($"Player Invincibility Glow {i + 1}");
+            rainbowAura[i] = halo.AddComponent<SpriteRenderer>();
+            rainbowAura[i].sprite = PowerTimerSprite.Get();
+            rainbowAura[i].sortingOrder = 40;
+        }
+    }
+
     private void LateUpdate()
     {
         if (target == null) return;
         Bounds body = BodyBounds();
+        if (invincibleVisible) PlaceRainbowAura(body);
         if (shield != null)
         {
             shield.transform.position = body.center;
@@ -120,6 +145,26 @@ public sealed class PlayerVisualEffects : MonoBehaviour
         }
     }
 
+    private void PlaceRainbowAura(Bounds body)
+    {
+        Camera view = Camera.main;
+        if (view == null) return;
+        float diameter = Mathf.Clamp(Mathf.Max(body.size.x, body.size.y) * 1.55f, 1f, 1.7f);
+        Quaternion facing = Quaternion.LookRotation(-view.transform.forward, view.transform.up);
+        for (int i = 0; i < rainbowAura.Length; i++)
+        {
+            SpriteRenderer halo = rainbowAura[i];
+            if (halo == null) continue;
+            float phase = Time.time * 2.3f + i * 2.1f;
+            halo.transform.position = body.center - view.transform.forward * (0.14f + i * .008f);
+            halo.transform.rotation = facing * Quaternion.Euler(0f, 0f, phase * (i % 2 == 0 ? 26f : -30f));
+            halo.transform.localScale = Vector3.one * diameter * (1f + i * .13f + Mathf.Sin(phase) * .055f);
+            Color rainbow = Color.HSVToRGB(Mathf.Repeat(Time.time * .23f + i / 3f, 1f), .7f, 1f);
+            rainbow.a = .65f + Mathf.Sin(phase) * .18f;
+            halo.color = rainbow;
+        }
+    }
+
     private Bounds BodyBounds()
     {
         Bounds bounds = new Bounds(target.position + Vector3.up * 0.45f, Vector3.one * 0.65f);
@@ -138,5 +183,7 @@ public sealed class PlayerVisualEffects : MonoBehaviour
         if (shield != null) Destroy(shield);
         foreach (SpriteRenderer bolt in bolts)
             if (bolt != null) Destroy(bolt.gameObject);
+        foreach (SpriteRenderer halo in rainbowAura)
+            if (halo != null) Destroy(halo.gameObject);
     }
 }

@@ -13,6 +13,8 @@ public class MainMenuBehaviour : MonoBehaviour
     private readonly List<Image> navTiles = new List<Image>();
     private RectTransform pageArea;
     private TMP_Text shopWalletText, homeText, stageTitle, stageDescription, feedback, characterFeedback, touchLabel;
+    private Button resetButton;
+    private float resetConfirmUntil;
     private TMP_Text soundLabel, bgmValueLabel, sfxValueLabel;
     private Slider bgmSlider, sfxSlider;
     private GameObject aboutPanel;
@@ -103,6 +105,7 @@ public class MainMenuBehaviour : MonoBehaviour
         PositionPages();
         SetRestingPageVisibility();
         RefreshAll();
+        OceanUI.StyleCanvasButtons(hubCanvas);
     }
 
     private void BindHubCanvas(bool overGameplay)
@@ -191,6 +194,19 @@ public class MainMenuBehaviour : MonoBehaviour
         WireButton(ComponentAt<Button>(root, "SOUND Toggle"), () => { GameAudioManager.ToggleMute(); RefreshAll(); });
         WireButton(ComponentAt<Button>(root, "TOUCH PAD Toggle"), ToggleTouch);
         WireButton(ComponentAt<Button>(root, "ABOUT Open"), () => SetAboutVisible(true));
+        resetButton = ComponentAt<Button>(root, "RESET Progress");
+        if (resetButton == null)
+        {
+            Transform settingsPage = FindDeepChild(root, "Settings Page");
+            if (settingsPage != null)
+            {
+                resetButton = OceanUI.CreateButton("RESET Progress", "RESET", settingsPage, OceanUI.ButtonFrame, null);
+                OceanUI.SetRect(resetButton.GetComponent<RectTransform>(), new Vector2(.53f, .07f), new Vector2(.79f, .17f), Vector2.zero, Vector2.zero);
+            }
+        }
+        if (resetButton != null && resetButton.GetComponentInChildren<TMP_Text>(true) == null)
+            OceanUI.CreateText("RESET", resetButton.transform, 40f, OceanUI.Deep);
+        WireButton(resetButton, ConfirmResetProgress);
         WireButton(ComponentAt<Button>(aboutPanel != null ? aboutPanel.transform : null, "ABOUT Close"), () => SetAboutVisible(false));
         WireSlider(bgmSlider, value => { GameAudioManager.SetBgmVolume(value); RefreshAll(); });
         WireSlider(sfxSlider, value => { GameAudioManager.SetSfxVolume(value); RefreshAll(); });
@@ -211,6 +227,7 @@ public class MainMenuBehaviour : MonoBehaviour
         SetRestingPageVisibility();
         ShopCategory(true);
         RefreshAll();
+        OceanUI.StyleCanvasButtons(hubCanvas);
     }
 
     private void ApplyEditableVisualTheme(Transform root)
@@ -323,6 +340,11 @@ public class MainMenuBehaviour : MonoBehaviour
     private void Update()
     {
         if (!built) return;
+        if (resetConfirmUntil > 0f && Time.unscaledTime > resetConfirmUntil)
+        {
+            resetConfirmUntil = 0f;
+            SetButtonText(resetButton, "RESET");
+        }
         bool landscape = Screen.width > Screen.height;
         if (landscape == lastLandscape) return;
         lastLandscape = landscape;
@@ -417,7 +439,7 @@ public class MainMenuBehaviour : MonoBehaviour
         OceanUI.SetRect(powers.GetComponent<RectTransform>(), new Vector2(.10f, .63f), new Vector2(.49f, .72f), Vector2.zero, Vector2.zero);
         OceanUI.SetRect(chars.GetComponent<RectTransform>(), new Vector2(.51f, .63f), new Vector2(.90f, .72f), Vector2.zero, Vector2.zero);
         Image shopWallet = OceanUI.CreatePanel("Shop Wallet", page, new Color(0.02f, 0.20f, 0.29f, 0.96f));
-        OceanUI.SetRect(shopWallet.rectTransform, new Vector2(.67f, .74f), new Vector2(.93f, .82f), Vector2.zero, Vector2.zero);
+        OceanUI.SetRect(shopWallet.rectTransform, new Vector2(.76f, .74f), new Vector2(.93f, .82f), Vector2.zero, Vector2.zero);
         shopWalletText = OceanUI.CreateText("", shopWallet.transform, 28f, OceanUI.Sand, TextAlignmentOptions.Right);
         shopWalletText.name = "Shop Wallet Text";
         powerShop = OceanUI.CreateObject("Power-up Stock", page);
@@ -497,7 +519,9 @@ public class MainMenuBehaviour : MonoBehaviour
         touchLabel = touch.GetComponentInChildren<TMP_Text>();
         touchLabel.name = "Touch Pad Value";
         Button about = OceanUI.CreateButton("ABOUT Open", "ABOUT", page, OceanUI.ButtonFrame, () => SetAboutVisible(true));
-        OceanUI.SetRect(about.GetComponent<RectTransform>(), new Vector2(.28f, .07f), new Vector2(.72f, .17f), Vector2.zero, Vector2.zero);
+        OceanUI.SetRect(about.GetComponent<RectTransform>(), new Vector2(.21f, .07f), new Vector2(.47f, .17f), Vector2.zero, Vector2.zero);
+        resetButton = OceanUI.CreateButton("RESET Progress", "RESET", page, OceanUI.ButtonFrame, ConfirmResetProgress);
+        OceanUI.SetRect(resetButton.GetComponent<RectTransform>(), new Vector2(.53f, .07f), new Vector2(.79f, .17f), Vector2.zero, Vector2.zero);
         BuildAboutPanel(page);
         return page;
     }
@@ -629,6 +653,8 @@ public class MainMenuBehaviour : MonoBehaviour
     private void Navigate(int index)
     {
         if (index == currentPage) return;
+        resetConfirmUntil = 0f;
+        SetButtonText(resetButton, "RESET");
         slideFromPage = currentPage;
         currentPage = index;
         for (int i = 0; i < pages.Count; i++) pages[i].gameObject.SetActive(i == slideFromPage || i == currentPage);
@@ -842,7 +868,9 @@ public class MainMenuBehaviour : MonoBehaviour
         for (int i = 0; i < navTiles.Count; i++)
         {
             Color tileColor = i % 3 == 0 ? OceanUI.Coral : i % 3 == 1 ? OceanUI.Sand : OceanUI.Aqua;
-            navTiles[i].color = i == currentPage ? Color.Lerp(tileColor, Color.white, 0.38f) : tileColor;
+            Color glassTile = i == currentPage ? Color.Lerp(tileColor, Color.white, 0.38f) : tileColor;
+            glassTile.a = .52f;
+            navTiles[i].color = glassTile;
         }
         if (stageTitle != null)
         {
@@ -1001,7 +1029,31 @@ public class MainMenuBehaviour : MonoBehaviour
 
     public void RefreshWallet()
     {
-        if (shopWalletText != null) shopWalletText.text = $"PEARL  {GameSession.PearlWallet}";
+        if (shopWalletText == null) return;
+        shopWalletText.text = $"PEARL  {GameSession.PearlWallet}";
+        RectTransform panel = shopWalletText.transform.parent as RectTransform;
+        if (panel == null) return;
+        float neededWidth = shopWalletText.GetPreferredValues(shopWalletText.text).x + 32f;
+        panel.anchorMin = new Vector2(.93f, panel.anchorMin.y);
+        panel.anchorMax = new Vector2(.93f, panel.anchorMax.y);
+        panel.pivot = new Vector2(1f, panel.pivot.y);
+        panel.anchoredPosition = new Vector2(0f, panel.anchoredPosition.y);
+        panel.sizeDelta = new Vector2(neededWidth, panel.sizeDelta.y);
+    }
+
+    private void ConfirmResetProgress()
+    {
+        if (Time.unscaledTime > resetConfirmUntil)
+        {
+            resetConfirmUntil = Time.unscaledTime + 5f;
+            SetButtonText(resetButton, "CONFIRM?");
+            return;
+        }
+        resetConfirmUntil = 0f;
+        GameSession.ResetScoresAndPearls();
+        SetButtonText(resetButton, "RESET");
+        GameManager.Instance?.RefreshHudAfterReset();
+        RefreshAll();
     }
 
     public void PlayGame()

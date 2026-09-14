@@ -859,8 +859,8 @@ public class MapManager : MonoBehaviour
     {
         if (container == null) return;
         List<int> vacantLanes = new List<int>();
-        foreach (int lane in freeLanes)
-            if (!HasCollectibleAtLane(container, lane)) vacantLanes.Add(lane);
+        foreach (int candidateLane in freeLanes)
+            if (!HasCollectibleAtLane(container, candidateLane)) vacantLanes.Add(candidateLane);
         if (vacantLanes.Count == 0) return;
         int lane = vacantLanes[Random.Range(0, vacantLanes.Count)];
         SpawnCollectiblePrefab(kind, container, lane, collectibleHeight + .03f);

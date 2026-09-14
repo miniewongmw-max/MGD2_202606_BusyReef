@@ -37,7 +37,7 @@ public static class GameSession
         "Dark water, fast hazards, rare luminous pearls"
     };
 
-    public static int PearlWallet => PlayerPrefs.GetInt(PearlKey, 0);
+    public static int PearlWallet => PlayerPrefs.GetInt(PearlKey, 500);
     public static int EquippedSkin => PlayerPrefs.GetInt(SkinKey, 0);
     public static int EquippedCharacter => EquippedSkin;
     public static string EquippedCharacterName => EquippedCharacter == 1 ? "Seal" : "Turtle";
@@ -67,6 +67,15 @@ public static class GameSession
     }
 
     public static int PowerUpCount(int index) => PlayerPrefs.GetInt($"Fishfish.PowerUp.{index}", 0);
+
+    public static void ResetScoresAndPearls()
+    {
+        foreach (FishGameMode mode in System.Enum.GetValues(typeof(FishGameMode)))
+            PlayerPrefs.DeleteKey($"Fishfish.HighScore.{mode}");
+        RunPearls = 0;
+        PlayerPrefs.SetInt(PearlKey, 500);
+        PlayerPrefs.Save();
+    }
 
     public static bool BuyPowerUp(int index, int price)
     {

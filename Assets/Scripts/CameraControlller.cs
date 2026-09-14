@@ -17,6 +17,10 @@ public class CameraController : MonoBehaviour
     [Tooltip("Maximum camera speed while catching a player who is moving ahead quickly.")]
     public float catchUpSpeed = 3f;
     public float maxDistanceAhead = 5f;
+    [Tooltip("Extra forward speed per tile once the player is well ahead of the camera.")]
+    public float extraCatchUpPerTile = 2.1f;
+    [Tooltip("Upper limit for adaptive catch-up; prevents a sudden camera snap.")]
+    public float maximumAdaptiveSpeed = 11f;
 
     [Range(0.15f, 0.6f)]
     [Tooltip("Normal player height measured upward from the bottom of the screen.")]
@@ -400,41 +404,40 @@ public class CameraController : MonoBehaviour
             forwardGap / Mathf.Max(0.01f, maxDistanceAhead)
         );
 
+        float largeGap = Mathf.Max(0f, forwardGap - 1.5f);
+
         float targetSpeed =
             Mathf.Lerp(minimumSpeed, catchUpSpeed, catchUpAmount)
-            + currentFastMoveBoost;
+            + currentFastMoveBoost
+            + largeGap * Mathf.Max(0f, extraCatchUpPerTile);
 
         // Don't let the temporary boost run away.
-        float absoluteMaxSpeed = catchUpSpeed + Mathf.Max(0f, fastMoveBoost);
+        float absoluteMaxSpeed = Mathf.Max(catchUpSpeed + Mathf.Max(0f, fastMoveBoost), maximumAdaptiveSpeed);
         targetSpeed = Mathf.Clamp(targetSpeed, minimumSpeed, absoluteMaxSpeed);
 
-        currentSpeed = Mathf.Lerp(
-            currentSpeed,
-            targetSpeed,
-            smoothness * Time.deltaTime
-        );
+        float speedResponse = Mathf.Max(0.01f, smoothness + largeGap * .7f);
+        currentSpeed = Mathf.Lerp(currentSpeed, targetSpeed,
+            1f - Mathf.Exp(-speedResponse * Time.deltaTime));
 
         focusZ += currentSpeed * Time.deltaTime;
 
         Vector3 focus = VisualFocusPoint(focusZ);
         Vector3 target = CameraPositionForFocus(focus) + cameraPositionOffset;
 
-        Vector3 followed = Vector3.Lerp(
-            transform.position,
-            target,
-            smoothness * Time.deltaTime
-        );
+        float positionResponse = Mathf.Max(0.01f, smoothness + largeGap * .55f);
+        Vector3 followed = Vector3.Lerp(transform.position, target,
+            1f - Mathf.Exp(-positionResponse * Time.deltaTime));
 
         followed.x = Mathf.Lerp(
             transform.position.x,
             target.x,
-            lateralSmoothness * Time.deltaTime
+            1f - Mathf.Exp(-Mathf.Max(.01f, lateralSmoothness) * Time.deltaTime)
         );
 
         followed.z = Mathf.Lerp(
             transform.position.z,
             target.z,
-            longitudinalSmoothness * Time.deltaTime
+            1f - Mathf.Exp(-Mathf.Max(.01f, longitudinalSmoothness + largeGap * 1.1f) * Time.deltaTime)
         );
 
         transform.position = followed;

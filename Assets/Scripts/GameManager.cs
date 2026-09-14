@@ -57,6 +57,7 @@ public class GameManager : MonoBehaviour
     private GameObject touchDirectionPad;
     private TMP_Text resultText;
     private readonly Image[] gameplayPowerIcons = new Image[4];
+    private readonly Image[] gameplayPowerTimers = new Image[4];
     private float remainingTime = 60f;
     private int score;
     private bool paused;
@@ -64,6 +65,8 @@ public class GameManager : MonoBehaviour
     private bool speedDashReady;
     private float magnetUntil;
     private float invincibleUntil;
+    private float magnetTimerDuration;
+    private float invincibleTimerDuration;
     private int crabStep = -1;
     private SeaObstacle crabObstacle;
     private float crabSafeUntil;
@@ -173,7 +176,7 @@ public class GameManager : MonoBehaviour
         TMP_Text pauseLabel = pauseButton.GetComponentInChildren<TMP_Text>();
         pauseLabel.fontSize = 56f;
         pauseLabel.color = OceanUI.Sand;
-        OceanUI.SetRect(pauseButton.GetComponent<RectTransform>(), new Vector2(.855f, .805f), new Vector2(.985f, .885f), Vector2.zero, Vector2.zero);
+        OceanUI.SetRect(pauseButton.GetComponent<RectTransform>(), new Vector2(.865f, .805f), new Vector2(.995f, .885f), Vector2.zero, Vector2.zero);
         pauseButton.gameObject.SetActive(false);
 
         CreateGameplayEquipmentIcons(root);
@@ -280,7 +283,10 @@ public class GameManager : MonoBehaviour
         SetActive(gameOverOverlay, false);
         SetActive(tutorialCompleteOverlay, false);
         if (crabText != null) crabText.gameObject.SetActive(false);
+        OceanUI.StyleCanvasButtons(canvas);
     }
+
+    public void RefreshHudAfterReset() => UpdateHud();
 
     private static Canvas FindSceneCanvas(string objectName)
     {
@@ -457,6 +463,9 @@ public class GameManager : MonoBehaviour
         if (GameSession.SpeedDashReady) speedDashReady = true;
         if (GameSession.PearlMagnetReady) magnetUntil = Time.time + 20f;
         if (GameSession.InvincibilityReady) invincibleUntil = Time.time + 10f;
+        if (GameSession.PearlMagnetReady) magnetTimerDuration = 20f;
+        if (GameSession.InvincibilityReady) invincibleTimerDuration = 10f;
+        playerVisualEffects?.SetInvincible(IsInvincible);
         if (GameSession.Mode == FishGameMode.Tutorial) BeginScriptedTutorial();
         else ShowStatus("GO!", 1.4f);
     }
@@ -500,8 +509,17 @@ public class GameManager : MonoBehaviour
         {
             case 0: shieldReady = true; playerVisualEffects?.SetShieldActive(true); ShowStatus("BUBBLE SHIELD READY", 1.2f); break;
             case 1: speedDashReady = true; ShowStatus("SPEED DASH READY", 1.2f); break;
-            case 2: magnetUntil = Mathf.Max(magnetUntil, Time.time) + 15f; ShowStatus("PEARL MAGNET", 1.2f); break;
-            case 3: invincibleUntil = Mathf.Max(invincibleUntil, Time.time) + 8f; ShowStatus("INVINCIBLE BUBBLE", 1.2f); break;
+            case 2:
+                magnetUntil = Mathf.Max(magnetUntil, Time.time) + 15f;
+                magnetTimerDuration = magnetUntil - Time.time;
+                ShowStatus("PEARL MAGNET", 1.2f);
+                break;
+            case 3:
+                invincibleUntil = Mathf.Max(invincibleUntil, Time.time) + 8f;
+                invincibleTimerDuration = invincibleUntil - Time.time;
+                playerVisualEffects?.SetInvincible(true);
+                ShowStatus("INVINCIBLE BUBBLE", 1.2f);
+                break;
         }
         if (GameSession.Mode == FishGameMode.Tutorial && TutorialPowerIndex(tutorialLesson) == index)
             BeginTutorialPowerTrial(index);
@@ -607,6 +625,8 @@ public class GameManager : MonoBehaviour
                 GameSession.MarkTutorialComplete();
                 GameSession.BankRunPearls();
                 gameStarted = false;
+                playerVisualEffects?.SetInvincible(false);
+                playerVisualEffects?.SetShieldActive(false);
                 playerController?.SetInputLocked(true);
                 if (pauseButton != null) pauseButton.gameObject.SetActive(false);
                 if (pearlChip != null) pearlChip.SetActive(false);
@@ -824,6 +844,21 @@ public class GameManager : MonoBehaviour
             icon.color = has3DModel ? Color.clear : icon.sprite != null ? Color.white : EquipmentPlaceholderColor(i);
             icon.gameObject.SetActive(gameStarted && activePowers[i]);
         }
+        UpdatePowerTimers();
+        playerVisualEffects?.SetInvincible(IsInvincible);
+    }
+
+    private void UpdatePowerTimers()
+    {
+        for (int i = 2; i <= 3; i++)
+        {
+            Image ring = gameplayPowerTimers[i];
+            if (ring == null || gameplayPowerIcons[i] == null) continue;
+            float remaining = (i == 2 ? magnetUntil : invincibleUntil) - Time.time;
+            float duration = i == 2 ? magnetTimerDuration : invincibleTimerDuration;
+            ring.gameObject.SetActive(gameStarted && remaining > 0f);
+            ring.fillAmount = duration > 0f ? Mathf.Clamp01(remaining / duration) : 0f;
+        }
     }
 
     public Sprite GetCharacterEquipmentIcon()
@@ -847,6 +882,7 @@ public class GameManager : MonoBehaviour
     {
         for (int i = 0; i < gameplayPowerIcons.Length; i++)
             gameplayPowerIcons[i] = CreateEquipmentIcon(root, "Equipped Power " + (i + 1), i);
+        EnsurePowerTimerImages();
     }
 
     private void EnsureGameplayEquipmentIcons(Transform root)
@@ -858,6 +894,40 @@ public class GameManager : MonoBehaviour
                 Debug.LogError("Editable Canvas is missing Equipped Power " + (i + 1) + ". Re-bake the Gameplay Canvas.");
             else
                 gameplayPowerIcons[i].gameObject.SetActive(false);
+        }
+        EnsurePowerTimerImages();
+    }
+
+    private void EnsurePowerTimerImages()
+    {
+        for (int i = 2; i <= 3; i++)
+        {
+            Image icon = gameplayPowerIcons[i];
+            if (icon == null) continue;
+            Transform existing = icon.transform.Find("Duration Ring");
+            Image ring = existing != null ? existing.GetComponent<Image>() : null;
+            if (ring == null)
+            {
+                GameObject go = new GameObject("Duration Ring", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
+                go.transform.SetParent(icon.transform, false);
+                ring = go.GetComponent<Image>();
+                RectTransform rect = ring.rectTransform;
+                rect.anchorMin = Vector2.zero;
+                rect.anchorMax = Vector2.one;
+                rect.offsetMin = Vector2.zero;
+                rect.offsetMax = Vector2.zero;
+                ring.color = i == 2 ? new Color(.5f, 1f, .93f, .88f) : new Color(1f, .65f, .9f, .9f);
+            }
+            ring.sprite = PowerTimerSprite.Get();
+            ring.type = Image.Type.Filled;
+            ring.fillMethod = Image.FillMethod.Radial360;
+            ring.fillOrigin = 2;
+            ring.fillClockwise = false;
+            ring.preserveAspect = true;
+            ring.raycastTarget = false;
+            ring.transform.SetAsFirstSibling();
+            ring.gameObject.SetActive(false);
+            gameplayPowerTimers[i] = ring;
         }
     }
 
@@ -898,6 +968,7 @@ public class GameManager : MonoBehaviour
         gameOver = true;
         gameStarted = false;
         playerVisualEffects?.SetShieldActive(false);
+        playerVisualEffects?.SetInvincible(false);
         if (pauseButton != null) pauseButton.gameObject.SetActive(false);
         if (pearlChip != null) pearlChip.SetActive(false);
         if (tutorialObjectivePanel != null) tutorialObjectivePanel.SetActive(false);
