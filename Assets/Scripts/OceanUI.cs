@@ -178,12 +178,6 @@ public static class OceanUI
     private static void StyleBubbleButton(Button button)
     {
         if (button == null || !button.TryGetComponent(out Image image)) return;
-        if (IsInside(button.transform, "Five Button Navigation") ||
-            IsInside(button.transform, "Mode Selection Page"))
-        {
-            RemoveBubbleStyle(button, image);
-            return;
-        }
         // The transparent pause glyph is intentionally an unframed control.
         if (image.color.a <= .02f) return;
         MakeRoundedIfDefault(image);

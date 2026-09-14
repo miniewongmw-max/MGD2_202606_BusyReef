@@ -887,7 +887,7 @@ MonoBehaviour:
   - {fileID: 0}
   bubbleShieldEffectPrefab: {fileID: 180001, guid: 1fe6edbbd56847a68a8560b0e3ce522b, type: 3}
   jellyfishZapSprite: {fileID: 21300000, guid: 4e43630ee00445f793951c981753da35, type: 3}
-  retreatLossScreenY: 0.17
+  retreatLossScreenY: 0.1105
 --- !u!4 &71614640
 Transform:
   m_ObjectHideFlags: 0
@@ -4223,7 +4223,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 0.01, g: 0.08, b: 0.13, a: 0.72}
+  m_Color: {r: 0.01, g: 0.08, b: 0.13, a: 0}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -17082,7 +17082,7 @@ MonoBehaviour:
   collectibleSpawnChance: 0.01
   collectibleHeight: 0.16
   pearlHeight: 0.13
-  bubbleShieldHeightOffset: -0.3
+  bubbleShieldHeightOffset: -0.2
   coralGroundHeight: 0.05
   jellyfishGroundHeight: 0.2
   squidGroundHeight: 0.11

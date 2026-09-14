@@ -993,7 +993,9 @@ public class MainMenuBehaviour : MonoBehaviour
         for (int i = 0; i < navTiles.Count; i++)
         {
             Color tileColor = i % 3 == 0 ? OceanUI.Coral : i % 3 == 1 ? OceanUI.Sand : OceanUI.Aqua;
-            navTiles[i].color = i == currentPage ? Color.Lerp(tileColor, Color.white, 0.38f) : tileColor;
+            Color glass = i == currentPage ? Color.Lerp(tileColor, Color.white, 0.38f) : tileColor;
+            glass.a = .52f;
+            navTiles[i].color = glass;
         }
         if (stageTitle != null)
         {
@@ -1173,8 +1175,11 @@ public class MainMenuBehaviour : MonoBehaviour
             return;
         }
         resetConfirmUntil = 0f;
-        GameSession.ResetScoresAndPearls();
+        GameSession.ResetProgress();
         SetButtonText(resetButton, "RESET");
+        FindAnyObjectByType<PlayerController>()?.RefreshCharacter();
+        if (characterFeedback != null) characterFeedback.text = "CURRENT: TURTLE";
+        if (feedback != null) feedback.text = "PURCHASES CLEARED";
         GameManager.Instance?.RefreshHudAfterReset();
         RefreshAll();
     }

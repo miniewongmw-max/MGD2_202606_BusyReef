@@ -68,10 +68,15 @@ public static class GameSession
 
     public static int PowerUpCount(int index) => PlayerPrefs.GetInt($"Fishfish.PowerUp.{index}", 0);
 
-    public static void ResetScoresAndPearls()
+    public static void ResetProgress()
     {
         foreach (FishGameMode mode in System.Enum.GetValues(typeof(FishGameMode)))
             PlayerPrefs.DeleteKey($"Fishfish.HighScore.{mode}");
+        PlayerPrefs.DeleteKey("Fishfish.SkinOwned.1");
+        PlayerPrefs.SetInt(SkinKey, 0);
+        for (int i = 0; i < 4; i++)
+            PlayerPrefs.DeleteKey($"Fishfish.PowerUp.{i}");
+        ShieldReady = SpeedDashReady = PearlMagnetReady = InvincibilityReady = false;
         RunPearls = 0;
         PlayerPrefs.SetInt(PearlKey, 500);
         PlayerPrefs.Save();
