@@ -78,6 +78,8 @@ public class MapManager : MonoBehaviour
     [Header("Per-Prefab Grounding Heights")]
     [Tooltip("Visible bottom height used for pearls. Other power-up collectibles keep using Collectible Height.")]
     public float pearlHeight = 0.13f;
+    [Tooltip("Additional visible-bottom offset for Bubble Shield pickups. Negative values lower the sphere without moving its pickup trigger.")]
+    public float bubbleShieldHeightOffset = -0.12f;
     [Tooltip("Each value is the requested visible-bottom position, so long tentacles/legs are included when grounding the model.")]
     public float coralGroundHeight = 0.05f;
     public float jellyfishGroundHeight = 0.20f;
@@ -915,6 +917,7 @@ public class MapManager : MonoBehaviour
         if (container == null || HasCollectibleAtLane(container, lane)) return null;
         GameObject prefab = GetCollectiblePrefab(kind);
         if (prefab == null) return null;
+        if (kind == CollectibleKind.BubbleShield) height += bubbleShieldHeightOffset;
         GameObject collectible = Instantiate(prefab, container);
         collectible.name = kind.ToString();
         collectible.transform.localPosition = new Vector3(lane, height, 0f);

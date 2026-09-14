@@ -9,11 +9,13 @@ public sealed class PlayerVisualEffects : MonoBehaviour
     private GameObject shield;
     private readonly SpriteRenderer[] bolts = new SpriteRenderer[3];
     private readonly SpriteRenderer[] rainbowAura = new SpriteRenderer[3];
+    private readonly SpriteRenderer[] magnetWaves = new SpriteRenderer[3];
     private readonly SpriteRenderer[] hitStars = new SpriteRenderer[5];
     private SpriteRenderer hitStarRing;
     private static Sprite hitStarSprite;
     private float hitStarRemaining;
     private bool invincibleVisible;
+    private bool magnetVisible;
     private float zapRemaining;
     private float breakRemaining;
     private float shieldDiameter;
@@ -47,9 +49,19 @@ public sealed class PlayerVisualEffects : MonoBehaviour
         // The source sphere mesh has a unit diameter. Scale to the visible
         // character, with limits so imported model bounds cannot swallow a lane.
         Bounds body = BodyBounds();
-        shieldDiameter = Mathf.Clamp(Mathf.Max(body.size.x, body.size.y, body.size.z) * 1.35f, 0.85f, 1.5f);
+        shieldDiameter = Mathf.Clamp(Mathf.Max(body.size.x, body.size.y, body.size.z) * 1.05f, 0.65f, 1.15f);
         shield.transform.localScale = Vector3.one * shieldDiameter;
-        shield.transform.position = body.center;
+        shield.transform.position = ShieldCenter(body);
+        // The imported bubble material has strong emission/opacity. Keep its
+        // protective outline without washing out the reef behind the player.
+        foreach (Renderer renderer in shield.GetComponentsInChildren<Renderer>())
+        {
+            MaterialPropertyBlock properties = new MaterialPropertyBlock();
+            renderer.GetPropertyBlock(properties);
+            properties.SetFloat("_EmissionMultiply", 0f);
+            properties.SetFloat("_OpacityOverall", 0.35f);
+            renderer.SetPropertyBlock(properties);
+        }
     }
 
     public void BreakShield()
@@ -118,14 +130,31 @@ public sealed class PlayerVisualEffects : MonoBehaviour
         }
     }
 
+    public void SetMagnetActive(bool active)
+    {
+        if (active == magnetVisible) return;
+        magnetVisible = active;
+        for (int i = 0; i < magnetWaves.Length; i++)
+        {
+            if (magnetWaves[i] != null) Destroy(magnetWaves[i].gameObject);
+            magnetWaves[i] = null;
+            if (!active) continue;
+            GameObject wave = new GameObject($"Player Magnet Wave {i + 1}");
+            magnetWaves[i] = wave.AddComponent<SpriteRenderer>();
+            magnetWaves[i].sprite = PowerTimerSprite.Get();
+            magnetWaves[i].sortingOrder = 42;
+        }
+    }
+
     private void LateUpdate()
     {
         if (target == null) return;
         Bounds body = BodyBounds();
         if (invincibleVisible) PlaceRainbowAura(body);
+        if (magnetVisible) PlaceMagnetWaves(body);
         if (shield != null)
         {
-            shield.transform.position = body.center;
+            shield.transform.position = ShieldCenter(body);
             if (breakRemaining > 0f)
             {
                 breakRemaining -= Time.deltaTime;
@@ -202,10 +231,30 @@ public sealed class PlayerVisualEffects : MonoBehaviour
             halo.transform.rotation = facing * Quaternion.Euler(0f, 0f, phase * (i % 2 == 0 ? 26f : -30f));
             halo.transform.localScale = Vector3.one * diameter * (1f + i * .13f + Mathf.Sin(phase) * .055f);
             Color rainbow = Color.HSVToRGB(Mathf.Repeat(Time.time * .23f + i / 3f, 1f), .7f, 1f);
-            rainbow.a = .65f + Mathf.Sin(phase) * .18f;
+            rainbow.a = .32f + Mathf.Sin(phase) * .08f;
             halo.color = rainbow;
         }
     }
+
+    private void PlaceMagnetWaves(Bounds body)
+    {
+        Camera view = Camera.main;
+        if (view == null) return;
+        Quaternion facing = Quaternion.LookRotation(-view.transform.forward, view.transform.up);
+        float baseDiameter = Mathf.Clamp(Mathf.Max(body.size.x, body.size.y) * 1.05f, .65f, 1.1f);
+        for (int i = 0; i < magnetWaves.Length; i++)
+        {
+            SpriteRenderer wave = magnetWaves[i];
+            if (wave == null) continue;
+            float progress = Mathf.Repeat(Time.time * .85f + i / (float)magnetWaves.Length, 1f);
+            wave.transform.position = body.center - Vector3.up * .1f - view.transform.forward * (.18f + i * .005f);
+            wave.transform.rotation = facing;
+            wave.transform.localScale = Vector3.one * baseDiameter * Mathf.Lerp(.7f, 1.55f, progress);
+            wave.color = new Color(1f, .13f, .22f, .42f * (1f - progress));
+        }
+    }
+
+    private static Vector3 ShieldCenter(Bounds body) => body.center - Vector3.up * .12f;
 
     private void PlaceHitStars(Bounds body)
     {
@@ -290,6 +339,8 @@ public sealed class PlayerVisualEffects : MonoBehaviour
             if (bolt != null) Destroy(bolt.gameObject);
         foreach (SpriteRenderer halo in rainbowAura)
             if (halo != null) Destroy(halo.gameObject);
+        foreach (SpriteRenderer wave in magnetWaves)
+            if (wave != null) Destroy(wave.gameObject);
         if (hitStarRing != null) Destroy(hitStarRing.gameObject);
         foreach (SpriteRenderer star in hitStars)
             if (star != null) Destroy(star.gameObject);

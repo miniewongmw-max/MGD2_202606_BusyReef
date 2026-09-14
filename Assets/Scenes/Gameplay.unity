@@ -5087,8 +5087,8 @@ RectTransform:
   - {fileID: 1286633735}
   m_Father: {fileID: 1576829767}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.133, y: 0.724}
-  m_AnchorMax: {x: 0.221, y: 0.796}
+  m_AnchorMin: {x: 0.137, y: 0.79}
+  m_AnchorMax: {x: 0.235, y: 0.87}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
@@ -8654,8 +8654,8 @@ RectTransform:
   m_Children: []
   m_Father: {fileID: 1576829767}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.67, y: 0.825}
-  m_AnchorMax: {x: 0.975, y: 0.87}
+  m_AnchorMin: {x: 0.67, y: 0.835}
+  m_AnchorMax: {x: 0.975, y: 0.88}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
@@ -12650,8 +12650,8 @@ RectTransform:
   - {fileID: 1378251871}
   m_Father: {fileID: 1576829767}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.231, y: 0.724}
-  m_AnchorMax: {x: 0.319, y: 0.796}
+  m_AnchorMin: {x: 0.244, y: 0.79}
+  m_AnchorMax: {x: 0.342, y: 0.87}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
@@ -16336,8 +16336,8 @@ RectTransform:
   - {fileID: 1484459049}
   m_Father: {fileID: 1576829767}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.035, y: 0.636}
-  m_AnchorMax: {x: 0.123, y: 0.708}
+  m_AnchorMin: {x: 0.03, y: 0.695}
+  m_AnchorMax: {x: 0.128, y: 0.775}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
@@ -16747,6 +16747,7 @@ MonoBehaviour:
   collectibleSpawnChance: 0.01
   collectibleHeight: 0.16
   pearlHeight: 0.13
+  bubbleShieldHeightOffset: -0.12
   coralGroundHeight: 0.05
   jellyfishGroundHeight: 0.2
   squidGroundHeight: 0.11
@@ -22045,8 +22046,8 @@ RectTransform:
   - {fileID: 1286687953}
   m_Father: {fileID: 1576829767}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.035, y: 0.724}
-  m_AnchorMax: {x: 0.123, y: 0.796}
+  m_AnchorMin: {x: 0.03, y: 0.79}
+  m_AnchorMax: {x: 0.128, y: 0.87}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}

@@ -169,7 +169,7 @@ public class GameManager : MonoBehaviour
         scoreText.name = "Score Text";
         bestScoreText = OceanUI.CreateText("BEST  0", root, 42f, OceanUI.Sand, TextAlignmentOptions.Right);
         bestScoreText.name = "Best Score";
-        OceanUI.SetRect(bestScoreText.rectTransform, new Vector2(0.67f, 0.825f), new Vector2(0.975f, 0.87f), Vector2.zero, Vector2.zero);
+        OceanUI.SetRect(bestScoreText.rectTransform, new Vector2(0.67f, 0.835f), new Vector2(0.975f, 0.88f), Vector2.zero, Vector2.zero);
         timerText = OceanUI.CreateText("", root, 28f, OceanUI.Coral, TextAlignmentOptions.Right);
         timerText.name = "Timer Text";
         timerText.fontSize = 52f;
@@ -470,6 +470,7 @@ public class GameManager : MonoBehaviour
         if (GameSession.PearlMagnetReady) magnetTimerDuration = 20f;
         if (GameSession.InvincibilityReady) invincibleTimerDuration = 10f;
         playerVisualEffects?.SetInvincible(IsInvincible);
+        playerVisualEffects?.SetMagnetActive(HasPearlMagnet);
         if (GameSession.Mode == FishGameMode.Tutorial) BeginScriptedTutorial();
         else ShowStatus("GO!", 1.4f);
     }
@@ -516,6 +517,7 @@ public class GameManager : MonoBehaviour
             case 2:
                 magnetUntil = Mathf.Max(magnetUntil, Time.time) + 15f;
                 magnetTimerDuration = magnetUntil - Time.time;
+                playerVisualEffects?.SetMagnetActive(true);
                 ShowStatus("PEARL MAGNET", 1.2f);
                 break;
             case 3:
@@ -630,6 +632,7 @@ public class GameManager : MonoBehaviour
                 GameSession.BankRunPearls();
                 gameStarted = false;
                 playerVisualEffects?.SetInvincible(false);
+                playerVisualEffects?.SetMagnetActive(false);
                 playerVisualEffects?.SetShieldActive(false);
                 playerController?.SetInputLocked(true);
                 if (pauseButton != null) pauseButton.gameObject.SetActive(false);
@@ -850,8 +853,12 @@ public class GameManager : MonoBehaviour
                 // Pack active powers into the first slots under the pearl HUD;
                 // unused or expired powers leave no visual gaps.
                 RectTransform rect = icon.rectTransform;
-                rect.anchorMin = gameplayPowerSlotMin[nextSlot];
-                rect.anchorMax = gameplayPowerSlotMax[nextSlot];
+                // Time Attack reserves the strip directly below pearls for its
+                // timer; shift this same authored two-row layout beneath it.
+                Vector2 timerOffset = GameSession.Mode == FishGameMode.TimeAttack
+                    ? new Vector2(0f, .08f) : Vector2.zero;
+                rect.anchorMin = gameplayPowerSlotMin[nextSlot] - timerOffset;
+                rect.anchorMax = gameplayPowerSlotMax[nextSlot] - timerOffset;
                 rect.anchoredPosition = gameplayPowerSlotPosition[nextSlot];
                 rect.sizeDelta = gameplayPowerSlotSize[nextSlot];
                 nextSlot++;
@@ -863,6 +870,7 @@ public class GameManager : MonoBehaviour
         }
         UpdatePowerTimers();
         playerVisualEffects?.SetInvincible(IsInvincible);
+        playerVisualEffects?.SetMagnetActive(HasPearlMagnet);
     }
 
     private void UpdatePowerTimers()
@@ -969,9 +977,9 @@ public class GameManager : MonoBehaviour
         icon.raycastTarget = false;
         int column = index % 3;
         int row = index / 3;
-        float left = .035f + column * .098f;
-        float top = row == 0 ? .796f : .708f;
-        OceanUI.SetRect(icon.rectTransform, new Vector2(left, top - .072f), new Vector2(left + .088f, top), Vector2.zero, Vector2.zero);
+        float left = .03f + column * .107f;
+        float top = row == 0 ? .87f : .775f;
+        OceanUI.SetRect(icon.rectTransform, new Vector2(left, top - .08f), new Vector2(left + .098f, top), Vector2.zero, Vector2.zero);
         icon.preserveAspect = true;
         return icon;
     }
@@ -1004,6 +1012,7 @@ public class GameManager : MonoBehaviour
         gameStarted = false;
         playerVisualEffects?.SetShieldActive(false);
         playerVisualEffects?.SetInvincible(false);
+        playerVisualEffects?.SetMagnetActive(false);
         if (pauseButton != null) pauseButton.gameObject.SetActive(false);
         if (pearlChip != null) pearlChip.SetActive(false);
         if (tutorialObjectivePanel != null) tutorialObjectivePanel.SetActive(false);

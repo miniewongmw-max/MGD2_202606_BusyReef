@@ -91,15 +91,17 @@ public class SeaObstacle : MonoBehaviour
             return false;
         }
 
-        GameAudioManager.Play(type switch
-        {
-            SeaObstacleType.Crab => GameSfx.Crab,
-            SeaObstacleType.Pufferfish => GameSfx.Pufferfish,
-            SeaObstacleType.Jellyfish => GameSfx.Jellyfish,
-            SeaObstacleType.Squid => GameSfx.Squid,
-            SeaObstacleType.Shark => GameSfx.Shark,
-            _ => GameSfx.Obstacle
-        });
+        // Shark audio is cued by the lunge below, when its head reaches the
+        // player, rather than when the obstacle is first detected.
+        if (type != SeaObstacleType.Shark)
+            GameAudioManager.Play(type switch
+            {
+                SeaObstacleType.Crab => GameSfx.Crab,
+                SeaObstacleType.Pufferfish => GameSfx.Pufferfish,
+                SeaObstacleType.Jellyfish => GameSfx.Jellyfish,
+                SeaObstacleType.Squid => GameSfx.Squid,
+                _ => GameSfx.Obstacle
+            });
 
         // Without protection, pufferfish remain moving walls.
         if (type == SeaObstacleType.Pufferfish)
@@ -121,6 +123,7 @@ public class SeaObstacle : MonoBehaviour
                     Destroy(gameObject, .35f);
                 return false;
             case SeaObstacleType.Crab:
+                GameManager.Instance.ShowBlockedHitStars();
                 GameManager.Instance.BeginCrabEscape(player, this);
                 return true;
             case SeaObstacleType.Jellyfish:
@@ -164,10 +167,16 @@ public class SeaObstacle : MonoBehaviour
         Vector3 bitePosition = startPosition + biteDirection * lungeDistance;
         const float biteDuration = 0.58f;
         float elapsed = 0f;
+        bool biteSoundPlayed = false;
         while (elapsed < biteDuration)
         {
             elapsed += Time.deltaTime;
             float t = Mathf.Clamp01(elapsed / biteDuration);
+            if (!biteSoundPlayed && t >= .64f)
+            {
+                biteSoundPlayed = true;
+                GameAudioManager.Play(GameSfx.Shark);
+            }
             float eased = 1f - Mathf.Pow(1f - t, 3f);
             transform.rotation = Quaternion.Slerp(startRotation, biteRotation, eased);
             // Upward-only arc keeps the shark visibly above the seabed.

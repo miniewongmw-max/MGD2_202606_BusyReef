@@ -49,6 +49,9 @@ public class GameAudioManager : MonoBehaviour
     public AudioSource musicSource;
     public AudioSource sfxSource;
 
+    private AudioClip sharkPlaybackSource;
+    private AudioClip sharkPlaybackClip;
+
     public static float BgmVolume => PlayerPrefs.GetFloat(BgmVolumeKey, 0.7f);
     public static float SfxVolume => PlayerPrefs.GetFloat(SfxVolumeKey, 0.8f);
     public static bool Muted => PlayerPrefs.GetInt(MutedKey, 0) == 1;
@@ -134,12 +137,68 @@ public class GameAudioManager : MonoBehaviour
             GameSfx.Pufferfish => manager.obstacleHit,
             GameSfx.Jellyfish => manager.jellyfish,
             GameSfx.Squid => manager.squid,
-            GameSfx.Shark => manager.shark,
+            GameSfx.Shark => manager.GetSharkPlaybackClip(),
             GameSfx.ProtectedHit => manager.protectedHit,
             _ => null
         };
         if (clip != null && !Muted)
             manager.sfxSource.PlayOneShot(clip, sound == GameSfx.Jellyfish ? .35f : 1f);
+    }
+
+    private AudioClip GetSharkPlaybackClip()
+    {
+        if (shark == null) return null;
+        if (sharkPlaybackSource == shark && sharkPlaybackClip != null) return sharkPlaybackClip;
+        if (sharkPlaybackClip != null && sharkPlaybackClip != sharkPlaybackSource)
+            Destroy(sharkPlaybackClip);
+        sharkPlaybackSource = shark;
+        sharkPlaybackClip = shark;
+
+        // Some supplied MP3 effects contain a quiet lead-in. Trim only that
+        // silence so the attack sound starts at the bite cue, not afterward.
+        int channels = shark.channels;
+        int sampleCount = shark.samples;
+        if (channels < 1 || sampleCount < 1) return sharkPlaybackClip;
+        float[] samples = new float[sampleCount * channels];
+        if (!shark.GetData(samples, 0)) return sharkPlaybackClip;
+
+        int searchFrames = Mathf.Min(sampleCount, Mathf.RoundToInt(shark.frequency * .5f));
+        float peak = 0f;
+        for (int i = 0; i < searchFrames * channels; i++)
+            peak = Mathf.Max(peak, Mathf.Abs(samples[i]));
+        float threshold = Mathf.Max(.008f, peak * .025f);
+        int windowFrames = Mathf.Max(1, shark.frequency / 100);
+        int onsetFrame = 0;
+        bool foundOnset = false;
+        for (int start = 0; start < searchFrames; start += windowFrames)
+        {
+            int end = Mathf.Min(start + windowFrames, searchFrames);
+            float energy = 0f;
+            for (int frame = start; frame < end; frame++)
+            for (int channel = 0; channel < channels; channel++)
+            {
+                float value = samples[frame * channels + channel];
+                energy += value * value;
+            }
+            float rms = Mathf.Sqrt(energy / ((end - start) * channels));
+            if (rms < threshold) continue;
+            onsetFrame = Mathf.Max(0, start - shark.frequency / 100);
+            foundOnset = true;
+            break;
+        }
+        if (!foundOnset || onsetFrame < shark.frequency / 50) return sharkPlaybackClip;
+
+        int remainingFrames = sampleCount - onsetFrame;
+        float[] trimmedSamples = new float[remainingFrames * channels];
+        System.Array.Copy(samples, onsetFrame * channels, trimmedSamples, 0, trimmedSamples.Length);
+        AudioClip trimmed = AudioClip.Create("Shark Bite (Tight Onset)", remainingFrames, channels, shark.frequency, false);
+        if (!trimmed.SetData(trimmedSamples, 0))
+        {
+            Destroy(trimmed);
+            return sharkPlaybackClip;
+        }
+        sharkPlaybackClip = trimmed;
+        return sharkPlaybackClip;
     }
 
     private void EnsureSources()
@@ -163,12 +222,20 @@ public class GameAudioManager : MonoBehaviour
     {
         EnsureSources();
         LoadMissingClips();
+        GetSharkPlaybackClip();
         float mute = Muted ? 0f : 1f;
         musicSource.volume = BgmVolume * mute;
         sfxSource.volume = SfxVolume * mute;
         if (backgroundMusic == null) return;
         if (musicSource.clip != backgroundMusic) musicSource.clip = backgroundMusic;
         if (!musicSource.isPlaying) musicSource.Play();
+    }
+
+    private void OnDestroy()
+    {
+        if (sharkPlaybackClip != null && sharkPlaybackClip != sharkPlaybackSource)
+            Destroy(sharkPlaybackClip);
+        if (Instance == this) Instance = null;
     }
 
     private void LoadMissingClips()
